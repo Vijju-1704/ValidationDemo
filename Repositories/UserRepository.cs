@@ -12,6 +12,7 @@ namespace ValidationDemo.Repositories
         {
             DbContect = context;
         }
+
         // Get user by ID
         public async Task<UserEntity?> GetByIdAsync(int id)
         {
@@ -22,6 +23,7 @@ namespace ValidationDemo.Repositories
             }
             return user;
         }
+
         // Get user by username
         public async Task<UserEntity?> GetByUsernameAsync(string username)
         {
@@ -33,6 +35,7 @@ namespace ValidationDemo.Repositories
             }
             return user;
         }
+
         // Get user by email
         public async Task<UserEntity?> GetByEmailAsync(string email)
         {
@@ -44,6 +47,7 @@ namespace ValidationDemo.Repositories
             }
             return user;
         }
+
         // Get all active users
         public async Task<IEnumerable<UserEntity>> GetAllActiveUsersAsync()
         {
@@ -52,6 +56,7 @@ namespace ValidationDemo.Repositories
                 .OrderByDescending(u => u.CreatedAt)
                 .ToListAsync();
         }
+
         // Get all deleted users
         public async Task<IEnumerable<UserEntity>> GetAllDeletedUsersAsync()
         {
@@ -60,6 +65,7 @@ namespace ValidationDemo.Repositories
                 .OrderByDescending(u => u.DeletedAt)
                 .ToListAsync();
         }
+
         // Check if username exists (excluding specific user ID)
         public async Task<bool> UsernameExistsAsync(string username, int? excludeUserId = null)
         {
@@ -69,6 +75,7 @@ namespace ValidationDemo.Repositories
                             u.IsActive &&
                             (!excludeUserId.HasValue || u.Id != excludeUserId.Value));
         }
+
         // Check if email exists (excluding specific user ID)
         public async Task<bool> EmailExistsAsync(string email, int? excludeUserId = null)
         {
@@ -78,6 +85,14 @@ namespace ValidationDemo.Repositories
                             u.IsActive &&
                             (!excludeUserId.HasValue || u.Id != excludeUserId.Value));
         }
+
+        // Get active user by username for authentication
+        public async Task<UserEntity?> GetActiveUserByUsernameAsync(string username)
+        {
+            return await DbContect.Users
+                .FirstOrDefaultAsync(u => u.Username == username && u.IsActive);
+        }
+
         // Create new user
         public async Task<UserEntity> CreateUserAsync(UserEntity user)
         {
@@ -85,6 +100,7 @@ namespace ValidationDemo.Repositories
             await DbContect.SaveChangesAsync();
             return user;
         }
+
         // Update user
         public async Task<UserEntity> UpdateUserAsync(UserEntity user)
         {
@@ -93,6 +109,7 @@ namespace ValidationDemo.Repositories
             await DbContect.SaveChangesAsync();
             return user;
         }
+
         // Soft delete user (set IsActive = false)
         public async Task<bool> SoftDeleteUserAsync(int id)
         {
@@ -108,6 +125,7 @@ namespace ValidationDemo.Repositories
             await DbContect.SaveChangesAsync();
             return true;
         }
+
         // Restore deleted user
         public async Task<bool> RestoreUserAsync(int id)
         {
@@ -129,6 +147,7 @@ namespace ValidationDemo.Repositories
         {
             return await DbContect.SaveChangesAsync() > 0;
         }
+
         public Task<bool> UserExistsAsync(EditUserModel model, int id)
         {
             throw new NotImplementedException();

@@ -8,14 +8,14 @@ namespace ValidationDemo.Repositories
         Task<UserEntity?> GetByIdAsync(int id);
         Task<UserEntity?> GetByUsernameAsync(string username);
         Task<UserEntity?> GetByEmailAsync(string email);
+        Task<UserEntity?> GetActiveUserByUsernameAsync(string username);
         Task<IEnumerable<UserEntity>> GetAllActiveUsersAsync();
         Task<IEnumerable<UserEntity>> GetAllDeletedUsersAsync();
 
         // Check operations
         Task<bool> UsernameExistsAsync(string username, int? excludeUserId = null);
         Task<bool> EmailExistsAsync(string email, int? excludeUserId = null);
-        //Task<bool> UserExistsAsync();
-        //Task<bool> UserExistsAsync(UserEntity user, int? excludeUserId = null);
+
         // CRUD operations
         Task<UserEntity> CreateUserAsync(UserEntity user);
         Task<UserEntity> UpdateUserAsync(UserEntity user);

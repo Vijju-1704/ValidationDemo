@@ -1,8 +1,130 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container mt-5">
+
+    <!-- Header Section -->
+    <div class="row">
+        <div class="col-12 text-center">
+            <h1 class="display-4">Welcome to User Portal</h1>
+            <p class="lead">A comprehensive user management system with authentication and filters</p>
+        </div>
+    </div>
+
+
+    <!-- Three Feature Cards -->
+    <div class="row mt-5 g-4">
+
+        <!-- Secure Authentication -->
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-shield-check" style="font-size: 3rem; color: #0d6efd;"></i>
+                    <h4 class="card-title mt-3">Secure Authentication</h4>
+                    <p class="card-text">
+                        Login with cookie-based authentication. Your session is secure and protected.
+                    </p>
+
+                    @if (User.Identity?.IsAuthenticated != true)
+                    {
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-primary">
+                            Login Now
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Filters -->
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-funnel" style="font-size: 3rem; color: #198754;"></i>
+                    <h4 class="card-title mt-3">Advanced Filters</h4>
+                    <p class="card-text">
+                        Using Exception Filters, Authorization Filters, and Result Filters for better control.
+                    </p>
+
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a asp-controller="Home" asp-action="Dashboard" class="btn btn-success">
+                            Go to Dashboard
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Time Caching -->
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-clock-history" style="font-size: 3rem; color: #ffc107;"></i>
+                    <h4 class="card-title mt-3">Time Caching</h4>
+                    <p class="card-text">
+                        Page visit times are cached for 2 minutes. See the same time on repeated visits!
+                    </p>
+
+                    @if (User.Identity?.IsAuthenticated != true)
+                    {
+                        <a asp-controller="User" asp-action="Register" class="btn btn-warning">
+                            Register
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- Feature List Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card bg-light shadow-sm">
+                <div class="card-body">
+                    <h4><i class="bi bi-info-circle"></i> Features Implemented:</h4>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <ul>
+                                <li><strong>Exception Filter:</strong> Global error handling</li>
+                                <li><strong>Authorization Filter:</strong> Protects dashboard and profile</li>
+                                <li><strong>Result Filter:</strong> Caches page visit time</li>
+                            </ul>
+                        </div>
+
+                        <div class="col-md-6">
+                            <ul>
+                                <li><strong>Cookie Authentication:</strong> Secure login/logout</li>
+                                <li><strong>User Display:</strong> Username shown in navbar when logged in</li>
+                                <li><strong>Protected Routes:</strong> Dashboard requires authentication</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Call to Action for Guests -->
+    @if (User.Identity?.IsAuthenticated != true)
+    {
+        <div class="row mt-4">
+            <div class="col-12 text-center">
+                <div class="alert alert-info shadow-sm">
+                    <h5>Try it now!</h5>
+                    <p class="mb-0">
+                        <a asp-controller="User" asp-action="Register" class="btn btn-primary me-2">Register</a>
+                        or
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-secondary ms-2">Login</a>
+                        to access the dashboard and experience filters in action!
+                    </p>
+                </div>
+            </div>
+        </div>
+    }
 </div>

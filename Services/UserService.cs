@@ -1,18 +1,22 @@
-﻿using ValidationDemo.Models;
-using ValidationDemo.Repositories;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Security.Cryptography;
 using System.Text;
 using ValidationDemo.Constants;
+using ValidationDemo.Models;
+using ValidationDemo.Repositories;
 
 namespace ValidationDemo.Services
 {
     public class UserService : IUserService
     {
         private readonly IUserRepository UserRepository;
+
         public UserService(IUserRepository UserRepository)
         {
             this.UserRepository = UserRepository;
         }
+
         // Register new user
         public async Task<(bool Success, string Message, UserEntity User)> RegisterUserAsync(UserRegistrationModel model)
         {
@@ -62,6 +66,7 @@ namespace ValidationDemo.Services
             var createdUser = await UserRepository.CreateUserAsync(user);
             return (true, string.Format(Messages.UserRegistered, model.Username), createdUser);
         }
+
         // Update user
         public async Task<(bool Success, string Message, UserEntity User)> UpdateUserAsync(EditUserModel model)
         {
@@ -108,6 +113,7 @@ namespace ValidationDemo.Services
             var updatedUser = await UserRepository.UpdateUserAsync(user);
             return (true, string.Format(Messages.UserUpdated, model.Username), updatedUser);
         }
+
         // Get user by ID
         public async Task<UserEntity> GetUserByIdAsync(int id)
         {
@@ -118,16 +124,19 @@ namespace ValidationDemo.Services
             }
             return user;
         }
+
         // Get all active users
         public async Task<IEnumerable<UserEntity>> GetAllActiveUsersAsync()
         {
             return await UserRepository.GetAllActiveUsersAsync();
         }
+
         // Get all deleted users
         public async Task<IEnumerable<UserEntity>> GetAllDeletedUsersAsync()
         {
             return await UserRepository.GetAllDeletedUsersAsync();
         }
+
         // Soft delete user
         public async Task<(bool Success, string Message)> DeleteUserAsync(int id)
         {
@@ -147,6 +156,7 @@ namespace ValidationDemo.Services
             }
             return (false, Messages.FailedToDeleteUser);
         }
+
         // Restore deleted user
         public async Task<(bool Success, string Message)> RestoreUserAsync(int id)
         {
@@ -166,6 +176,7 @@ namespace ValidationDemo.Services
             }
             return (false, Messages.FailedToRestoreUser);
         }
+
         // Validate username
         public async Task<(bool IsValid, string ErrorMessage)> ValidateUsernameAsync(string username, int? excludeUserId = null)
         {
@@ -179,6 +190,7 @@ namespace ValidationDemo.Services
             }
             return (true, Messages.Empty);
         }
+
         // Validate email
         public async Task<(bool IsValid, string ErrorMessage)> ValidateEmailAsync(string email, int? excludeUserId = null)
         {
@@ -192,6 +204,29 @@ namespace ValidationDemo.Services
             }
             return (true, Messages.Empty);
         }
+
+        // Validate user credentials for login
+        public async Task<UserEntity?> ValidateUserAsync(string username, string password)
+        {
+            // Get active user by username from repository
+            var user = await UserRepository.GetActiveUserByUsernameAsync(username);
+
+            if (user == null)
+            {
+                return null;
+            }
+
+            // In production, you should hash the password and compare hashes
+            // For now, we'll do a simple comparison (THIS IS NOT SECURE!)
+            // TODO: Implement proper password hashing (BCrypt, PBKDF2, etc.)
+            if (user.PasswordHash == HashPassword(password))
+            {
+                return user;
+            }
+
+            return null;
+        }
+
         // Helper method to hash password
         private string HashPassword(string password)
         {

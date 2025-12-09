@@ -22,5 +22,6 @@ namespace ValidationDemo.Services
         // Validation
         Task<(bool IsValid, string ErrorMessage)> ValidateUsernameAsync(string username, int? excludeUserId = null);
         Task<(bool IsValid, string ErrorMessage)> ValidateEmailAsync(string email, int? excludeUserId = null);
+        Task<UserEntity?> ValidateUserAsync(string username, string password);
     }
 }
