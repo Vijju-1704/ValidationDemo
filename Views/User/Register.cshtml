@@ -1,0 +1,49 @@
+﻿@model ValidationDemo.Models.UserRegistrationModel
+
+@{
+    ViewData["Title"] = "User Registration";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">User Registration</h3>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.Referral != null)
+                    {
+                        <div class="alert alert-info">
+                            @ViewBag.Referral
+                        </div>
+                    }
+
+                    <!-- Validation Summary -->
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+                    }
+
+                    <form asp-controller="User" asp-action="Register" method="post">
+                        <!-- Common fields (username, email, dob, age, etc.) -->
+                        <partial name="_CommonUserFields" />
+
+                        <!-- Registration-specific password fields -->
+                        <partial name="_RegisterPasswordFields" />
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">Register</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Include Common Validation Scripts -->
+    <partial name="_ValidationScriptsCommon" />
+}

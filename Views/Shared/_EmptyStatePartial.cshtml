@@ -1,0 +1,22 @@
+﻿@{
+    bool isDeletedView = ViewBag.IsDeletedView ?? false;
+}
+
+<div class="alert @(isDeletedView ? "alert-success" : "alert-info") text-center">
+    @if (isDeletedView)
+    {
+        <h5>No deleted users</h5>
+        <p>All users are currently active!</p>
+        <a asp-controller="UserManagement" asp-action="List" class="btn btn-primary">
+            View Active Users
+        </a>
+    }
+    else
+    {
+        <h5>No users registered yet</h5>
+        <p>Be the first to register!</p>
+        <a asp-controller="User" asp-action="Register" class="btn btn-primary">
+            Register Now
+        </a>
+    }
+</div>

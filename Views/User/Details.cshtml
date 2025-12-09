@@ -1,0 +1,150 @@
+﻿@model ValidationDemo.Models.UserEntity
+
+@{
+    ViewData["Title"] = "User Details";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h3 class="mb-0">User Details</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>User ID:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @Model.Id
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Username:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @Model.Username
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Email:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            <a href="mailto:@Model.Email">@Model.Email</a>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Date of Birth:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @Model.DateOfBirth.ToString("MMMM dd, yyyy")
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Age:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @Model.Age years old
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Gender:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @Model.Gender
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Phone Number:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            <a href="tel:@Model.PhoneNumber">@Model.PhoneNumber</a>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Country:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @Model.Country
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Website))
+                    {
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>Website:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                <a href="@Model.Website" target="_blank">@Model.Website</a>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Newsletter Subscription:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @if (Model.SubscribeNewsletter)
+                            {
+                                <span class="badge bg-success">Subscribed</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Not Subscribed</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Registration Date:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @Model.CreatedAt.ToString("MMMM dd, yyyy 'at' hh:mm tt")
+                        </div>
+                    </div>
+
+                    @if (Model.UpdatedAt.HasValue)
+                    {
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>Last Updated:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                @Model.UpdatedAt.Value.ToString("MMMM dd, yyyy 'at' hh:mm tt")
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="card-footer">
+                    <a asp-controller="User" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                        Edit User
+                    </a>
+                    <a asp-controller="UserManagement" asp-action="List" class="btn btn-secondary">
+                        Back to List
+                    </a>
+                    <a asp-controller="User" asp-action="Register" class="btn btn-primary">
+                        Register Another User
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

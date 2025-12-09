@@ -1,0 +1,107 @@
+﻿@model IEnumerable<ValidationDemo.Models.UserEntity>
+
+@{
+    bool isDeletedView = ViewBag.IsDeletedView ?? false;
+    string tableClass = isDeletedView ? "table-secondary" : "";
+}
+
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Age</th>
+                <th>Phone Number</th>
+                <th>@(isDeletedView ? "Deleted Date" : "Registered Date")</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr class="@tableClass">
+                    <td>@user.Id</td>
+                    <td>
+                        @if (isDeletedView)
+                        {
+                            <del>@user.Username</del>
+                        }
+                        else
+                        {
+                            @user.Username
+                        }
+                    </td>
+                    <td>
+                        @if (isDeletedView)
+                        {
+                            <del>@user.Email</del>
+                        }
+                        else
+                        {
+                            @user.Email
+                        }
+                    </td>
+                    <td>@user.Age</td>
+                    <td>@user.PhoneNumber</td>
+                    <td>
+                        @if (isDeletedView)
+                        {
+                            if (user.DeletedAt.HasValue)
+                            {
+                                @user.DeletedAt.Value.ToString("MMM dd, yyyy")
+                            }
+                            else
+                            {
+                                <span class="text-muted">N/A</span>
+                            }
+                        }
+                        else
+                        {
+                            @user.CreatedAt.ToString("MMM dd, yyyy")
+                        }
+                    </td>
+                    <td>
+                        @if (isDeletedView)
+                        {
+                            <form asp-controller="UserManagement" asp-action="Restore" asp-route-id="@user.Id" method="post" style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-success"
+                                        onclick="return confirm('Are you sure you want to restore this user?');">
+                                    <i class="bi bi-arrow-counterclockwise"></i> Restore
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <a asp-controller="User"
+                               asp-action="Details"
+                               asp-route-id="@user.Id"
+                               class="btn btn-sm btn-info me-1">
+                                View Details
+                            </a>
+                            <a asp-controller="User"
+                               asp-action="Edit"
+                               asp-route-id="@user.Id"
+                               class="btn btn-sm btn-warning me-1">
+                                Edit
+                            </a>
+                            <a asp-controller="UserManagement"
+                               asp-action="Delete"
+                               asp-route-id="@user.Id"
+                               class="btn btn-sm btn-danger">
+                                Delete
+                            </a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="mt-3">
+    <p class="text-muted">
+        Total @(isDeletedView ? "Deleted" : "") Users: <strong>@Model.Count()</strong>
+    </p>
+</div>

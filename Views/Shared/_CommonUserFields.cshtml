@@ -1,0 +1,93 @@
+﻿@model ValidationDemo.Models.UserBaseModel
+<!-- Username Field -->
+<div class="mb-3">
+    <label for="Username" class="form-label">Username</label>
+    <input asp-for="Username" class="form-control" placeholder="Enter username" />
+    <span asp-validation-for="Username" class="text-danger"></span>
+</div>
+
+<!-- Email Field -->
+<div class="mb-3">
+    <label for="Email" class="form-label">Email</label>
+    <input asp-for="Email"
+           type="text"
+           class="form-control"
+           placeholder="Enter email" />
+    <span asp-validation-for="Email" class="text-danger"></span>
+    <small class="form-text text-muted">
+        Enter a valid email address (e.g., user@example.com)
+    </small>
+</div>
+
+<!-- Date of Birth Field (Date Picker) -->
+<div class="mb-3">
+    <label for="DateOfBirth" class="form-label">Date of Birth</label>
+    <input asp-for="DateOfBirth"
+           class="form-control"
+           type="date"
+           max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+    <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+</div>
+
+<!-- Age Field -->
+<div class="mb-3">
+    <label for="Age" class="form-label">Age</label>
+    <input asp-for="Age" class="form-control" placeholder="Enter age" min="0" type="number" />
+    <span asp-validation-for="Age" class="text-danger"></span>
+</div>
+
+<!-- Gender Field (Radio Buttons) -->
+<div class="mb-3">
+    <label class="form-label">Gender</label>
+    <div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" asp-for="Gender" value="Male" id="genderMale" />
+            <label class="form-check-label" for="genderMale">Male</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" asp-for="Gender" value="Female" id="genderFemale" />
+            <label class="form-check-label" for="genderFemale">Female</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" asp-for="Gender" value="Other" id="genderOther" />
+            <label class="form-check-label" for="genderOther">Other</label>
+        </div>
+    </div>
+    <span asp-validation-for="Gender" class="text-danger d-block"></span>
+</div>
+
+<!-- Phone Number Field -->
+<div class="mb-3">
+    <label for="PhoneNumber" class="form-label">Phone Number</label>
+    <input asp-for="PhoneNumber"
+           class="form-control"
+           placeholder="9876543210"
+           maxlength="10"
+           inputmode="numeric"
+           pattern="[6-9][0-9]{9}" />    
+           <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+</div>
+
+<!-- Country Field (Dropdown) -->
+<div class="mb-3">
+    <label for="Country" class="form-label">Country</label>
+    <select asp-for="Country"
+            asp-items="Html.GetEnumSelectList<ValidationDemo.Enums.CountryEnum>()"
+            class="form-select">
+        <option value="">-- Select Country --</option>
+    </select>
+    <span asp-validation-for="Country" class="text-danger"></span>
+</div>
+
+<!-- Website Field (Optional) -->
+<div class="mb-3">
+    <label for="Website" class="form-label">Website</label>
+    <input asp-for="Website" class="form-control" placeholder="https://example.com" />
+    <span asp-validation-for="Website" class="text-danger"></span>
+</div>
+
+<!-- Subscribe Newsletter Checkbox (Optional) -->
+<div class="mb-3 form-check">
+    <input asp-for="SubscribeNewsletter" class="form-check-input" type="checkbox" />
+    <label asp-for="SubscribeNewsletter" class="form-check-label"></label>
+</div>

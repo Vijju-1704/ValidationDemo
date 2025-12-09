@@ -1,0 +1,53 @@
+﻿@model ValidationDemo.Models.EditUserModel
+
+@{
+    ViewData["Title"] = "Edit User";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="mb-0">Edit User Information</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Validation Summary -->
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+                    }
+
+                    <form asp-controller="User" asp-action="Edit" asp-route-id="@Model.Id" method="post">
+                        <!-- Hidden field for Id -->
+                        <input asp-for="Id" type="hidden" />
+
+                        <!-- Common fields (username, email, dob, age, etc.) -->
+                        <partial name="_CommonUserFields" />
+
+                        <!-- Edit-specific password change fields -->
+                        <partial name="_EditPasswordFields" />
+
+                        <!-- Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-save"></i> Update User
+                            </button>
+                            <a asp-controller="User" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                                Cancel
+                            </a>
+                            <a asp-controller="UserManagement" asp-action="List" class="btn btn-outline-secondary">
+                                Back to List
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Include Common Validation Scripts -->
+    <partial name="_ValidationScriptsCommon" />
+}

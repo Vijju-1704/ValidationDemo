@@ -1,0 +1,44 @@
+﻿@model IEnumerable<ValidationDemo.Models.UserEntity>
+
+@{
+    ViewData["Title"] = "Registered Users";
+    ViewBag.IsDeletedView = false;
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">Registered Users</h3>
+                    <div>
+                        <a asp-controller="UserManagement" asp-action="DeletedUsers" class="btn btn-secondary btn-sm me-2">
+                            <i class="bi bi-trash"></i> View Deleted Users
+                        </a>
+                        <a asp-controller="User" asp-action="Register" class="btn btn-light btn-sm">
+                            <i class="bi bi-plus-circle"></i> Add New User
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (Model.Any())
+                    {
+                        <partial name="_UserTablePartial" model="Model" />
+                    }
+                    else
+                    {
+                        <partial name="_EmptyStatePartial" />
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

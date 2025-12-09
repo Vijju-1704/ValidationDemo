@@ -1,0 +1,37 @@
+﻿<!-- Enable client-side validation -->
+<partial name="_ValidationScriptsPartial" />
+<script src="~/js/alphanumeric-validator.js"></script>
+<script src="~/js/custom-validation.js" asp-append-version="true"></script>
+<script src="~/js/custom-validation1.js" asp-append-version="true"></script>
+<script>
+    $(document).ready(function () {
+        // Apply Indian phone validation
+        $('#PhoneNumber').rules('add', {
+            indianphone: true
+        });
+
+        // Apply custom email validation
+        $('#Email').rules('add', {
+            customemail: true
+        });
+
+        // Optional: Restrict input to numbers only for phone
+        $('#PhoneNumber').on('keypress', function (e) {
+            if (e.which < 48 || e.which > 57) {
+                e.preventDefault();
+            }
+        });
+
+        // Trim email on blur
+        $('#Email').on('blur', function () {
+            $(this).val($(this).val().trim());
+        });
+
+        // Restrict age input to numbers only
+        $('#Age').on('keypress', function (e) {
+            if (e.which < 48 || e.which > 57) {
+                e.preventDefault();
+            }
+        });
+    });
+</script>
