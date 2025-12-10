@@ -41,7 +41,7 @@ namespace ValidationDemo.Controllers
                     return View(model);
                 }
 
-                HttpContext.Session.SetString("Registered", "true");
+                //HttpContext.Session.SetString("Registered", "true");
 
                 TempData["SuccessMessage"] = result.Message;
                 return RedirectToAction("Success", new { id = result.User.Id });

@@ -10,18 +10,18 @@ namespace ValidationDemo.Controllers
     [Route("account")]
     public class AccountController : Controller
     {
-        private readonly IUserService _userService;
-        private readonly ILogger<AccountController> _logger;
+        private readonly IUserService UserService;
+        private readonly ILogger<AccountController> Logger;
 
         public AccountController(IUserService userService, ILogger<AccountController> logger)
         {
-            _userService = userService;
-            _logger = logger;
+            UserService = userService;
+            Logger = logger;
         }
 
         // GET: /account/login
         [HttpGet("login")]
-        public IActionResult Login(string returnUrl = null)
+        public IActionResult Login(string? returnUrl = null)
         {
             ViewBag.ReturnUrl = returnUrl;
             return View();
@@ -30,15 +30,22 @@ namespace ValidationDemo.Controllers
         // POST: /account/login
         [HttpPost("login")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginModel model, string returnUrl = null)
+        public async Task<IActionResult> Login(LoginModel model, string? returnUrl = null)
         {
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
 
+            // Ensure username and password are not null before passing to ValidateUserAsync
+            if (string.IsNullOrWhiteSpace(model.Username) || string.IsNullOrWhiteSpace(model.Password))
+            {
+                ModelState.AddModelError(string.Empty, "Username and password are required.");
+                return View(model);
+            }
+
             // Validate user credentials
-            var user = await _userService.ValidateUserAsync(model.Username, model.Password);
+            var user = await UserService.ValidateUserAsync(model.Username, model.Password);
 
             if (user == null)
             {
@@ -56,8 +63,8 @@ namespace ValidationDemo.Controllers
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Name, user.Username ?? string.Empty),
+                new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
                 new Claim("UserId", user.Id.ToString())
             };
 
@@ -78,7 +85,7 @@ namespace ValidationDemo.Controllers
                 claimsPrincipal,
                 authProperties);
 
-            _logger.LogInformation($"User {user.Username} logged in successfully");
+            Logger.LogInformation($"User {user.Username} logged in successfully");
 
             TempData["SuccessMessage"] = $"Welcome back, {user.Username}!";
 
@@ -99,7 +106,7 @@ namespace ValidationDemo.Controllers
 
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
-            _logger.LogInformation($"User {userName} logged out");
+            Logger.LogInformation($"User {userName} logged out");
 
             TempData["SuccessMessage"] = "You have been logged out successfully";
 
