@@ -27,7 +27,7 @@ namespace ValidationDemo.Controllers
         [ServiceFilter(typeof(PageVisitTimeFilter))] // Cache visit time
         public async Task<IActionResult> Dashboard()
         {
-            var userId = int.Parse(User.FindFirst("UserId").Value);
+            var userId = int.Parse(User.FindFirst("UserId")!.Value);
             var user = await _userService.GetUserByIdAsync(userId);
 
             ViewBag.Username = user.Username;
@@ -42,7 +42,7 @@ namespace ValidationDemo.Controllers
         [ServiceFilter(typeof(PageVisitTimeFilter))]
         public async Task<IActionResult> Profile()
         {
-            var userId = int.Parse(User.FindFirst("UserId").Value);
+            var userId = int.Parse(User.FindFirst("UserId")!.Value);
             var user = await _userService.GetUserByIdAsync(userId);
 
             if (user == null || !user.IsActive)

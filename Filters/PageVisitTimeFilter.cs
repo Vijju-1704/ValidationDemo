@@ -6,13 +6,13 @@ namespace ValidationDemo.Filters
 {
     public class PageVisitTimeFilter : IResultFilter
     {
-        private readonly IMemoryCache _cache;
-        private readonly ILogger<PageVisitTimeFilter> _logger;
+        private readonly IMemoryCache Cache;
+        private readonly ILogger<PageVisitTimeFilter> Logger;
 
         public PageVisitTimeFilter(IMemoryCache cache, ILogger<PageVisitTimeFilter> logger)
         {
-            _cache = cache;
-            _logger = logger;
+            Cache = cache;
+            Logger = logger;
         }
 
         public void OnResultExecuting(ResultExecutingContext context)
@@ -25,10 +25,10 @@ namespace ValidationDemo.Filters
             DateTime visitTime;
 
             // Try to get from cache
-            if (_cache.TryGetValue(cacheKey, out DateTime cachedTime))
+            if (Cache.TryGetValue(cacheKey, out DateTime cachedTime))
             {
                 visitTime = cachedTime;
-                _logger.LogInformation($"Using cached visit time for {userName}: {visitTime}");
+                Logger.LogInformation($"Using cached visit time for {userName}: {visitTime}");
             }
             else
             {
@@ -38,22 +38,22 @@ namespace ValidationDemo.Filters
                 var cacheOptions = new MemoryCacheEntryOptions()
                     .SetAbsoluteExpiration(TimeSpan.FromMinutes(2)); // Cache for 2 minutes
 
-                _cache.Set(cacheKey, visitTime, cacheOptions);
-                _logger.LogInformation($"Cached new visit time for {userName}: {visitTime}");
+                Cache.Set(cacheKey, visitTime, cacheOptions);
+                Logger.LogInformation($"Cached new visit time for {userName}: {visitTime}");
             }
 
             // Add to ViewBag so it's available in the view
             if (context.Controller is Controller controller)
             {
                 controller.ViewBag.PageVisitTime = visitTime;
-                controller.ViewBag.IsCachedTime = _cache.TryGetValue(cacheKey, out _);
+                controller.ViewBag.IsCachedTime = Cache.TryGetValue(cacheKey, out _);
             }
         }
 
         public void OnResultExecuted(ResultExecutedContext context)
         {
             // Optional: Log after result is executed
-            _logger.LogInformation($"Result executed for {context.ActionDescriptor.DisplayName}");
+            Logger.LogInformation($"Result executed for {context.ActionDescriptor.DisplayName}");
         }
     }
 }

@@ -152,5 +152,19 @@ namespace ValidationDemo.Repositories
         {
             throw new NotImplementedException();
         }
+        public async Task<int> GetTotalCountAsync()
+        {
+            return await DbContect.Users.CountAsync();
+        }
+
+        public async Task<int> GetActiveCountAsync()
+        {
+            return await DbContect.Users.CountAsync(u => u.IsActive);
+        }
+
+        public async Task<int> GetDeletedCountAsync()
+        {
+            return await DbContect.Users.CountAsync(u => !u.IsActive);
+        }
     }
 }

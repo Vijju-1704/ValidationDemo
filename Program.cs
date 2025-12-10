@@ -14,7 +14,12 @@ namespace ValidationDemo
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddControllersWithViews();
+            builder.Services.AddControllersWithViews(options =>
+            {
+                options.Filters.Add<GlobalExceptionFilter>();
+                options.Filters.Add<GlobalTimeFilter>();
+                options.Filters.Add<LogActionFilter>();
+            }); 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -27,7 +32,8 @@ namespace ValidationDemo
             // Filters
             builder.Services.AddScoped<GlobalExceptionFilter>();
             builder.Services.AddScoped<PageVisitTimeFilter>();
-
+            builder.Services.AddScoped<GlobalTimeFilter>();
+            builder.Services.AddScoped<LogActionFilter>();
             // Memory Cache for the PageVisitTimeFilter
             builder.Services.AddMemoryCache();
 

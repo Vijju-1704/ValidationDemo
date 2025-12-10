@@ -61,6 +61,11 @@
                                     <i class="bi bi-trash"></i> Deleted Users
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Test" asp-action="Index">
+                                    <i class="bi bi-bug"></i> Test Errors
+                                </a>
+                            </li>
 
                             @* User Dropdown *@
                             <li class="nav-item dropdown">
@@ -109,6 +114,15 @@
     </header>
 
     <main role="main" class="pb-3">
+        @if (ViewBag.CurrentTime != null)
+        {
+            <div class="container mt-3">
+                <div class="alert alert-info">
+                    <strong>⏰ Current Time:</strong> @ViewBag.CurrentTime.ToString("hh:mm:ss tt")
+                    <small class="text-muted">(Cached for 20 seconds)</small>
+                </div>
+            </div>
+        }
         @RenderBody()
     </main>
 
@@ -122,6 +136,14 @@
                     Logged in as <strong>@User.Identity.Name</strong>
                 </span>
             }
+            @* STATISTICS IN FOOTER
+            <div class="col-md-6">
+                <div class="small">
+                    <h6 class="mb-2">Quick Stats</h6>
+                    <vc:user-stats></vc:user-stats>
+                </div>
+            </div> *@
+            
         </div>
     </footer>
 

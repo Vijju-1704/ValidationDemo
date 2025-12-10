@@ -1,0 +1,141 @@
+﻿@{
+    ViewData["Title"] = "Exception Filter Test Page";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-bug"></i> Global Exception Filter - Test Page
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Warning:</strong> This page intentionally throws errors to test the GlobalExceptionFilter.
+                        Each button below will trigger a different type of exception.
+                    </div>
+
+                    <h5 class="mb-3">Click any button to trigger an exception:</h5>
+
+                    <div class="row g-3">
+                        <!-- Test 1 -->
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">Test 1: Simple Exception</h6>
+                                    <p class="card-text small">Throws a basic Exception with a custom message.</p>
+                                    <a href="@Url.Action("ThrowError", "Test")"
+                                       class="btn btn-danger btn-sm">
+                                        <i class="bi bi-exclamation-circle"></i> Throw Error
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Test 2 -->
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">Test 2: Null Reference</h6>
+                                    <p class="card-text small">Attempts to access a property of a null object.</p>
+                                    <a href="@Url.Action("NullReferenceError", "Test")"
+                                       class="btn btn-danger btn-sm">
+                                        <i class="bi bi-exclamation-circle"></i> Null Reference
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Test 3 -->
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">Test 3: Division by Zero</h6>
+                                    <p class="card-text small">Attempts to divide a number by zero.</p>
+                                    <a href="@Url.Action("DivisionError", "Test")"
+                                       class="btn btn-danger btn-sm">
+                                        <i class="bi bi-exclamation-circle"></i> Division Error
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Test 4 -->
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">Test 4: Invalid Operation</h6>
+                                    <p class="card-text small">Attempts to get first item from empty list.</p>
+                                    <a href="@Url.Action("InvalidOperationError", "Test")"
+                                       class="btn btn-danger btn-sm">
+                                        <i class="bi bi-exclamation-circle"></i> Invalid Operation
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Test 5 -->
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">Test 5: Argument Exception</h6>
+                                    <p class="card-text small">Throws an ArgumentException with parameter name.</p>
+                                    <a href="@Url.Action("ArgumentError", "Test")"
+                                       class="btn btn-danger btn-sm">
+                                        <i class="bi bi-exclamation-circle"></i> Argument Error
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Test 6 -->
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">Test 6: Custom Message</h6>
+                                    <p class="card-text small">Throws error with custom message from URL.</p>
+                                    <a href="@Url.Action("CustomError", "Test", new { message = "My custom error message!" })"
+                                       class="btn btn-danger btn-sm">
+                                        <i class="bi bi-exclamation-circle"></i> Custom Error
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Test 7 -->
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">Test 7: Database Error</h6>
+                                    <p class="card-text small">Simulates a database connection failure.</p>
+                                    <a href="@Url.Action("DatabaseError", "Test")"
+                                       class="btn btn-danger btn-sm">
+                                        <i class="bi bi-exclamation-circle"></i> Database Error
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-4">
+                        <h6><i class="bi bi-info-circle"></i> What to expect:</h6>
+                        <ul class="mb-0">
+                            <li><strong>Development Mode:</strong> You'll see detailed error messages and stack traces</li>
+                            <li><strong>Production Mode:</strong> You'll see generic error messages (no technical details)</li>
+                            <li><strong>Logs:</strong> Check your console/logs to see that errors are being logged</li>
+                        </ul>
+                    </div>
+
+                    <div class="mt-3">
+                        <a asp-controller="Home" asp-action="Dashboard" class="btn btn-primary">
+                            <i class="bi bi-house"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
