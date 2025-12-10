@@ -23,6 +23,9 @@ namespace ValidationDemo
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+            // Register Unit of Work
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
             // Register Repository
             builder.Services.AddScoped<IUserRepository, UserRepository>();
 
