@@ -23,8 +23,10 @@
                     }
 
                     @* Validation summary *@
-                    <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
-
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+                    }
                     <form asp-controller="Account"
                           asp-action="Login"
                           asp-route-returnUrl="@ViewBag.ReturnUrl"

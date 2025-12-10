@@ -236,5 +236,21 @@ namespace ValidationDemo.Services
                 return Convert.ToBase64String(hashedBytes);
             }
         }
+
+        // ViewComponent related methods
+        public async Task<int> GetTotalUsersCountAsync()
+        {
+            return await UserRepository.GetTotalCountAsync();
+        }
+
+        public async Task<int> GetActiveUsersCountAsync()
+        {
+            return await UserRepository.GetActiveCountAsync();
+        }
+
+        public async Task<int> GetDeletedUsersCountAsync()
+        {
+            return await UserRepository.GetDeletedCountAsync();
+        }
     }
 }

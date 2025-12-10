@@ -25,5 +25,10 @@ namespace ValidationDemo.Repositories
         // Save changes
         Task<bool> SaveChangesAsync();
         Task<bool> UserExistsAsync(EditUserModel model, int id);
+
+        // ViewComponent related
+        Task<int> GetTotalCountAsync();
+        Task<int> GetActiveCountAsync();
+        Task<int> GetDeletedCountAsync();
     }
 }
