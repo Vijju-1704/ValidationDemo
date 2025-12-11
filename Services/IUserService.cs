@@ -1,5 +1,5 @@
 ﻿using ValidationDemo.Models;
-
+using ValidationDemo.Common;
 namespace ValidationDemo.Services
 {
     public interface IUserService
@@ -28,5 +28,42 @@ namespace ValidationDemo.Services
         Task<int> GetTotalUsersCountAsync();
         Task<int> GetActiveUsersCountAsync();
         Task<int> GetDeletedUsersCountAsync();
+
+        // <summary>
+        /// Get user by username
+        /// </summary>
+        Task<UserEntity?> GetUserByUsernameAsync(string username);
+
+        /// <summary>
+        /// Update user lockout status
+        /// </summary>
+        Task<OperationResult> UpdateUserLockoutAsync(UserEntity user);
+
+        /// <summary>
+        /// Reset failed login attempts to 0
+        /// </summary>
+        Task ResetFailedLoginAttemptsAsync(int userId);
+
+        /// <summary>
+        /// Increment failed login attempts and lock if needed
+        /// </summary>
+        Task IncrementFailedLoginAttemptsAsync(string username);
+
+        /// <summary>
+        /// Update last login timestamp and IP address
+        /// </summary>
+        Task UpdateLastLoginAsync(int userId, string ipAddress);
+
+        /// <summary>
+        /// Assign a role to a user (Admin, Manager, User)
+        /// </summary>
+        Task<OperationResult> AssignRoleAsync(int userId, string roleName);
+
+        /// <summary>
+        /// Assign permissions to a user
+        /// </summary>
+        Task<OperationResult> AssignPermissionsAsync(int userId, string permissions);
+        Task UpdateAsync(UserEntity user);
+
     }
 }

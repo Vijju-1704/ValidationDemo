@@ -30,5 +30,6 @@ namespace ValidationDemo.Repositories
         Task<int> GetTotalCountAsync();
         Task<int> GetActiveCountAsync();
         Task<int> GetDeletedCountAsync();
+        Task UpdateAsync(UserEntity user);
     }
 }

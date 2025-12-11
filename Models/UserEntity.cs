@@ -57,5 +57,46 @@ namespace ValidationDemo.Models
         public bool IsActive { get; internal set; } = true;
 
         public DateTime? DeletedAt { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        public string Role { get; set; } = "User"; // Default role
+
+        /// <summary>
+        /// Department the user belongs to
+        /// </summary>
+        [StringLength(100)]
+        public string? Department { get; set; }
+
+        /// <summary>
+        /// Comma-separated permissions: ViewReports,EditUsers,DeleteUsers
+        /// </summary>
+        public string? Permissions { get; set; }
+
+        /// <summary>
+        /// Number of consecutive failed login attempts
+        /// </summary>
+        public int FailedLoginAttempts { get; set; } = 0;
+
+        /// <summary>
+        /// When the account lockout expires (null = not locked)
+        /// </summary>
+        public DateTime? LockoutEnd { get; set; }
+
+        /// <summary>
+        /// Checks if account is currently locked out
+        /// </summary>
+        public bool IsLockedOut => LockoutEnd.HasValue && LockoutEnd.Value > DateTime.UtcNow;
+
+        /// <summary>
+        /// Last successful login timestamp
+        /// </summary>
+        public DateTime? LastLoginAt { get; set; }
+
+        /// <summary>
+        /// IP address of last login
+        /// </summary>
+        [StringLength(50)]
+        public string? LastLoginIp { get; set; }
     }
 }

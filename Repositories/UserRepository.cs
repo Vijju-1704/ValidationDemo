@@ -166,5 +166,10 @@ namespace ValidationDemo.Repositories
         {
             return await DbContect.Users.CountAsync(u => !u.IsActive);
         }
+        public async Task UpdateAsync(UserEntity user)
+        {
+            DbContect.Users.Update(user);
+            await DbContect.SaveChangesAsync();
+        }
     }
 }
