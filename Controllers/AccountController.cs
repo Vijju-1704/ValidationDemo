@@ -108,19 +108,23 @@ namespace ValidationDemo.Controllers
             {
                 return RedirectToAction("List", "UserManagement");
             }
-
-            // Redirect to returnUrl or user profile
-            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            else
             {
-                return Redirect(returnUrl);
+                return RedirectToAction("Dashboard", "Home");
             }
 
+            //// Redirect to returnUrl or user profile
+            //if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            //{
+            //    return Redirect(returnUrl);
+            //}
 
-            Logger.LogInformation($"User {user.Username} logged in successfully");
 
-            TempData["SuccessMessage"] = $"Welcome back, {user.Username}!";
+            //Logger.LogInformation($"User {user.Username} logged in successfully");
 
-            return View(model);
+            //TempData["SuccessMessage"] = $"Welcome back, {user.Username}!";
+
+            //return View(model);
         }
 
         //// GET: /account/logout

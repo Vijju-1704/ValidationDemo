@@ -1,4 +1,4 @@
-﻿@model ValidationDemo.Models.LoginModel
+﻿@* @model ValidationDemo.Models.LoginModel
 
 @{
     ViewData["Title"] = "Login";
@@ -44,6 +44,98 @@
                             Don't have an account?
                             <a asp-controller="User" asp-action="Register">Register here</a>
                         </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+} *@
+@model ValidationDemo.Models.LoginModel
+
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-5">
+                <div class="card shadow-sm rounded-3">
+                    <div class="card-header bg-primary text-white text-center py-3">
+                        <h4 class="mb-0 fw-semibold">Sign in to ValidationDemo</h4>
+                        <small class="d-block text-white-50">Welcome back — please enter your details</small>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <form asp-action="Login" method="post" novalidate>
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger small" role="alert"></div>
+
+                            <!-- Username -->
+                            <div class="mb-3">
+                                <label for="UsernameInput" class="form-label small">Username</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                                    <input asp-for="Username" id="UsernameInput" class="form-control" placeholder="Enter username" autofocus />
+                                </div>
+                                <span asp-validation-for="Username" class="form-text text-danger small"></span>
+                            </div>
+
+                            <!-- Password -->
+                            <div class="mb-3">
+                                <label for="PasswordInput" class="form-label small">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                                    <input asp-for="Password" id="PasswordInput" class="form-control" type="password" placeholder="Enter password" />
+                                </div>
+                                <span asp-validation-for="Password" class="form-text text-danger small"></span>
+                            </div>
+
+                            <!-- Remember + Forgot -->
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="form-check">
+                                    <input asp-for="RememberMe" class="form-check-input" id="RememberMeInput" />
+                                    <label asp-for="RememberMe" class="form-check-label small">Remember me</label>
+                                </div>
+
+                                <div>
+                                    <a asp-controller="Account" asp-action="ForgotPassword" class="small">Forgot password?</a>
+                                </div>
+                            </div>
+
+                            <!-- Submit -->
+                            <div class="d-grid mb-3">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i> Sign in
+                                </button>
+                            </div>
+
+                            <!-- OR / Social buttons -->
+                            <div class="text-center mb-3 small text-muted">or continue with</div>
+
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-outline-secondary w-100">
+                                    <i class="bi bi-google me-2"></i> Google
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary w-100">
+                                    <i class="bi bi-microsoft me-2"></i> Microsoft
+                                </button>
+                            </div>
+
+                            <hr class="my-4" />
+
+                            <div class="text-center small">
+                                Don't have an account?
+                                <a asp-controller="User" asp-action="Register">Create one</a>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="card-footer text-center text-muted small py-2">
+                        &copy; @DateTime.Now.Year - UserHub
                     </div>
                 </div>
             </div>
