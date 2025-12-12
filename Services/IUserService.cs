@@ -28,5 +28,9 @@ namespace ValidationDemo.Services
         Task<int> GetTotalUsersCountAsync();
         Task<int> GetActiveUsersCountAsync();
         Task<int> GetDeletedUsersCountAsync();
+
+
+        //Authentication
+        Task<(bool Success, string Message)> CreateAdminUserAsync(string username, string email, string password);
     }
 }

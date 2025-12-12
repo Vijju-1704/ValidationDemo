@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using ValidationDemo.Constants;
 using ValidationDemo.Models;
 using ValidationDemo.Services;
 
@@ -37,6 +38,7 @@ namespace ValidationDemo.Controllers
                 return View(model);
             }
 
+            ViewData["ReturnUrl"] = returnUrl;
             // Ensure username and password are not null before passing to ValidateUserAsync
             if (string.IsNullOrWhiteSpace(model.Username) || string.IsNullOrWhiteSpace(model.Password))
             {
@@ -63,10 +65,26 @@ namespace ValidationDemo.Controllers
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Username ?? string.Empty),
-                new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
-                new Claim("UserId", user.Id.ToString())
-            };
+                new Claim(ClaimTypes.Name, user.Username!),
+                new Claim(ClaimTypes.Email, user.Email!),
+                new Claim(AppClaims.UserId, user.Id.ToString()),
+                new Claim(ClaimTypes.Role, user.Role),
+                new Claim(AppClaims.Role, user.Role)
+             };
+            if (user.Role == AppRoles.Admin)
+            {
+                claims.Add(new Claim(AppClaims.CanEditUsers, "true"));
+                claims.Add(new Claim(AppClaims.CanDeleteUsers, "true"));
+                claims.Add(new Claim(AppClaims.CanViewUsers, "true"));
+                claims.Add(new Claim(AppClaims.CanViewDeletedUsers, "true"));
+                claims.Add(new Claim(AppClaims.CanRestoreUsers, "true"));
+            }
+            else
+            {
+                // Regular users can only view their own profile
+                claims.Add(new Claim(AppClaims.CanViewUsers, "false"));
+            }
+
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
@@ -85,31 +103,46 @@ namespace ValidationDemo.Controllers
                 claimsPrincipal,
                 authProperties);
 
-            Logger.LogInformation($"User {user.Username} logged in successfully");
+            // Redirect based on role
+            if (user.Role == AppRoles.Admin)
+            {
+                return RedirectToAction("List", "UserManagement");
+            }
 
-            TempData["SuccessMessage"] = $"Welcome back, {user.Username}!";
-
-            // Redirect to return URL or dashboard
+            // Redirect to returnUrl or user profile
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
             {
                 return Redirect(returnUrl);
             }
 
-            return RedirectToAction("Dashboard", "Home");
+
+            Logger.LogInformation($"User {user.Username} logged in successfully");
+
+            TempData["SuccessMessage"] = $"Welcome back, {user.Username}!";
+
+            return View(model);
         }
 
-        // GET: /account/logout
-        [HttpGet("logout")]
+        //// GET: /account/logout
+        //[HttpGet("logout")]
+        //public async Task<IActionResult> Logout()
+        //{
+        //    var userName = User.Identity?.Name;
+
+        //    await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+        //    Logger.LogInformation($"User {userName} logged out");
+
+        //    TempData["SuccessMessage"] = "You have been logged out successfully";
+
+        //    return RedirectToAction("Login");
+        //}
+        // POST: /account/logout
+        [HttpPost("logout")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-            var userName = User.Identity?.Name;
-
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-
-            Logger.LogInformation($"User {userName} logged out");
-
-            TempData["SuccessMessage"] = "You have been logged out successfully";
-
             return RedirectToAction("Login");
         }
 

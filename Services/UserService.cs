@@ -267,5 +267,39 @@ namespace ValidationDemo.Services
         {
             return await UnitOfWork.Users.GetDeletedCountAsync();
         }
+
+        // Add this method to UserService class
+        public async Task<(bool Success, string Message)> CreateAdminUserAsync(
+            string username,
+            string email,
+            string password)
+        {
+            // Check if admin already exists
+            var existingAdmin = await UnitOfWork.Users.GetActiveUserByUsernameAsync(username);
+            if (existingAdmin != null)
+            {
+                return (false, "Admin user already exists");
+            }
+
+            var adminUser = new UserEntity
+            {
+                Username = username,
+                Email = email,
+                PasswordHash = HashPassword(password),
+                DateOfBirth = new DateTime(1990, 1, 1),
+                Age = 33,
+                Gender = "Male",
+                PhoneNumber = "9999999999",
+                Country = Enums.CountryEnum.India,
+                Website = "",
+                SubscribeNewsletter = false,
+                CreatedAt = DateTime.UtcNow,
+                IsActive = true,
+                Role = AppRoles.Admin // Set as Admin
+            };
+
+            await UnitOfWork.Users.CreateUserAsync(adminUser);
+            return (true, "Admin user created successfully");
+        }
     }
 }

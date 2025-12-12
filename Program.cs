@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using ValidationDemo.Authorization;
+using ValidationDemo.Constants;
 using ValidationDemo.Data;
 using ValidationDemo.Filters;
 using ValidationDemo.Repositories;
@@ -61,6 +64,28 @@ namespace ValidationDemo
                     options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                 });
 
+            builder.Services.AddAuthorization(options =>
+            {
+                // Policy 1: Admin Only
+                options.AddPolicy(AppPolicies.AdminOnly, policy =>
+                    policy.RequireRole(AppRoles.Admin));
+
+                // Policy 2: Can View Deleted Users (Admin only)
+                options.AddPolicy(AppPolicies.CanViewDeletedUsers, policy =>
+                    policy.RequireRole(AppRoles.Admin)
+                          .RequireClaim(AppClaims.CanViewDeletedUsers, "true"));
+
+                // Policy 3: Can Manage Users (Admin only)
+                options.AddPolicy(AppPolicies.CanManageUsers, policy =>
+                    policy.RequireRole(AppRoles.Admin)
+                          .RequireClaim(AppClaims.CanDeleteUsers, "true")
+                          .RequireClaim(AppClaims.CanEditUsers, "true"));
+            });
+
+            // Register custom authorization handler
+            builder.Services.AddSingleton<IAuthorizationHandler, CanEditOwnProfileHandler>();
+
+
             var app = builder.Build();
             app.UseSession();
             // Configure the HTTP request pipeline.
@@ -76,6 +101,7 @@ namespace ValidationDemo
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
             //app.MapGet("/", () => Results.Redirect("/user/register"));
             app.MapControllerRoute(
