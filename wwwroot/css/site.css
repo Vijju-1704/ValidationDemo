@@ -20,4 +20,36 @@ html {
 body {
   margin-bottom: 60px;
 }
+/* Simple Watermark Style */
+.watermark {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2.5rem;
+    color: rgba(0, 0, 0, 0.05);
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 9999;
+    white-space: nowrap;
+    user-select: none;
+    animation: floatWatermark 15s ease-in-out infinite;
+}
 
+@keyframes floatWatermark {
+    0%, 100% {
+        transform: translate(-50%, -50%);
+    }
+
+    25% {
+        transform: translate(-30%, -60%);
+    }
+
+    50% {
+        transform: translate(-70%, -40%);
+    }
+
+    75% {
+        transform: translate(-40%, -70%);
+    }
+}

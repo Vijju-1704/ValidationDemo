@@ -22,7 +22,8 @@ namespace ValidationDemo
                 options.Filters.Add<GlobalExceptionFilter>();
                 options.Filters.Add<GlobalTimeFilter>();
                 options.Filters.Add<LogActionFilter>();
-            }); 
+            });
+            builder.Services.AddHttpContextAccessor();
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -84,7 +85,12 @@ namespace ValidationDemo
 
             // Register custom authorization handler
             builder.Services.AddSingleton<IAuthorizationHandler, CanEditOwnProfileHandler>();
-
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
 
             var app = builder.Build();
             app.UseSession();
@@ -103,6 +109,8 @@ namespace ValidationDemo
 
             app.UseAuthentication();
             app.UseAuthorization();
+            builder.Services.AddSession();
+            app.UseSession();
             //app.MapGet("/", () => Results.Redirect("/user/register"));
             app.MapControllerRoute(
                 name: "default",

@@ -60,6 +60,8 @@ namespace ValidationDemo.Controllers
                 ModelState.AddModelError(string.Empty, "Your account has been deactivated");
                 return View(model);
             }
+            HttpContext.Session.SetString("UserName", user.Username!);
+            HttpContext.Session.SetString("UserEmail", user.Email!);
 
             // Create claims
             var claims = new List<Claim>
@@ -146,6 +148,7 @@ namespace ValidationDemo.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
+            HttpContext.Session.Clear();
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login");
         }

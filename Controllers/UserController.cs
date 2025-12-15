@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using ValidationDemo.Authorization;
 using ValidationDemo.Constants;
 using ValidationDemo.Models;
 using ValidationDemo.Services;
@@ -86,17 +87,22 @@ namespace ValidationDemo.Controllers
                 return NotFound();
             }
 
-            // Get current logged-in user ID
-            var currentUserIdClaim = User.FindFirst(AppClaims.UserId);
-            var currentUserId = currentUserIdClaim != null ? int.Parse(currentUserIdClaim.Value) : 0;
+            //// Get current logged-in user ID
+            //var currentUserIdClaim = User.FindFirst(AppClaims.UserId);
+            //var currentUserId = currentUserIdClaim != null ? int.Parse(currentUserIdClaim.Value) : 0;
 
-            // Check if user is viewing their own profile OR is Admin
-            var isAdmin = User.IsInRole(AppRoles.Admin);
-            var isOwnProfile = currentUserId == id;
+            //// Check if user is viewing their own profile OR is Admin
+            //var isAdmin = User.IsInRole(AppRoles.Admin);
+            //var isOwnProfile = currentUserId == id;
 
-            if (!isAdmin && !isOwnProfile)
+            //if (!isAdmin && !isOwnProfile)
+            //{
+            //    return RedirectToAction("AccessDenied", "Account");
+            //}
+            var authResult = await _authorizationService.AuthorizeAsync(User, null, new CanEditOwnProfileRequirement(id));
+            if (!authResult.Succeeded)
             {
-                return RedirectToAction("AccessDenied", "Account");
+                return Forbid();
             }
 
             return View(user);
@@ -115,16 +121,21 @@ namespace ValidationDemo.Controllers
             }
 
             // Get current logged-in user ID
-            var currentUserIdClaim = User.FindFirst(AppClaims.UserId);
-            var currentUserId = currentUserIdClaim != null ? int.Parse(currentUserIdClaim.Value) : 0;
+            //var currentUserIdClaim = User.FindFirst(AppClaims.UserId);
+            //var currentUserId = currentUserIdClaim != null ? int.Parse(currentUserIdClaim.Value) : 0;
 
-            // Check authorization: Can only edit own profile OR is Admin
-            var isAdmin = User.IsInRole(AppRoles.Admin);
-            var isOwnProfile = currentUserId == id;
+            //// Check authorization: Can only edit own profile OR is Admin
+            //var isAdmin = User.IsInRole(AppRoles.Admin);
+            //var isOwnProfile = currentUserId == id;
 
-            if (!isAdmin && !isOwnProfile)
+            //if (!isAdmin && !isOwnProfile)
+            //{
+            //    return RedirectToAction("AccessDenied", "Account");
+            //}
+            var authResult = await _authorizationService.AuthorizeAsync(User, null, new CanEditOwnProfileRequirement(id));
+            if (!authResult.Succeeded)
             {
-                return RedirectToAction("AccessDenied", "Account");
+                return Forbid();
             }
 
             // Map UserEntity to EditUserModel
@@ -157,18 +168,22 @@ namespace ValidationDemo.Controllers
             }
 
             // Get current logged-in user ID
-            var currentUserIdClaim = User.FindFirst(AppClaims.UserId);
-            var currentUserId = currentUserIdClaim != null ? int.Parse(currentUserIdClaim.Value) : 0;
+            //var currentUserIdClaim = User.FindFirst(AppClaims.UserId);
+            //var currentUserId = currentUserIdClaim != null ? int.Parse(currentUserIdClaim.Value) : 0;
 
             // Check authorization
-            var isAdmin = User.IsInRole(AppRoles.Admin);
-            var isOwnProfile = currentUserId == id;
+            //var isAdmin = User.IsInRole(AppRoles.Admin);
+            //var isOwnProfile = currentUserId == id;
 
-            if (!isAdmin && !isOwnProfile)
+            //if (!isAdmin && !isOwnProfile)
+            //{
+            //    return RedirectToAction("AccessDenied", "Account");
+            //}
+            var authResult = await _authorizationService.AuthorizeAsync(User,null,new CanEditOwnProfileRequirement(id));
+            if (!authResult.Succeeded)
             {
-                return RedirectToAction("AccessDenied", "Account");
+                return Forbid();
             }
-
             if (ModelState.IsValid)
             {
                 var result = await UserService.UpdateUserAsync(model);
@@ -178,11 +193,9 @@ namespace ValidationDemo.Controllers
                     ModelState.AddModelError(string.Empty, result.Message);
                     return View(model);
                 }
-
                 TempData["SuccessMessage"] = result.Message;
                 return RedirectToAction("Details", new { id = result.User.Id });
             }
-
             return View(model);
         }
     }
