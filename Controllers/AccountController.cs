@@ -1,14 +1,17 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using ValidationDemo.Constants;
+using ValidationDemo.Filters;
 using ValidationDemo.Models;
 using ValidationDemo.Services;
 
 namespace ValidationDemo.Controllers
 {
     [Route("account")]
+    [ServiceFilter(typeof(GlobalExceptionFilter))]
     public class AccountController : Controller
     {
         private readonly IUserService UserService;
@@ -26,6 +29,42 @@ namespace ValidationDemo.Controllers
         {
             ViewBag.ReturnUrl = returnUrl;
             return View();
+        }
+        // Google Login
+        [HttpGet("google-login")]
+        public IActionResult GoogleLogin()
+        {
+            var properties = new AuthenticationProperties
+            {
+                RedirectUri = Url.Action("GoogleResponse")
+            };
+            properties.Items["prompt"] = "select_account";
+            return Challenge(properties, GoogleDefaults.AuthenticationScheme);
+        }
+
+        // Google Callback
+        [HttpGet("google-response")]
+        public async Task<IActionResult> GoogleResponse()
+        {
+            var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            if (!result.Succeeded)
+            {
+                return RedirectToAction("Login");
+            }
+
+            // Get user info from Google
+            var claims = result.Principal.Identities.FirstOrDefault()?.Claims;
+            var email = claims?.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+            var name = claims?.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+
+            // Store in session
+            HttpContext.Session.SetString("UserName", name ?? "User");
+            HttpContext.Session.SetString("UserEmail", email ?? "");
+
+            Logger.LogInformation($"User logged in via Google: {email}");
+
+            return RedirectToAction("Index", "Home");
         }
 
         // POST: /account/login

@@ -32,5 +32,7 @@ namespace ValidationDemo.Services
 
         //Authentication
         Task<(bool Success, string Message)> CreateAdminUserAsync(string username, string email, string password);
+
+        Task<List<string>> GetActiveUsernamesAsync();
     }
 }

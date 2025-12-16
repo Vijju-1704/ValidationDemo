@@ -7,19 +7,19 @@ namespace ValidationDemo.Filters
 {
     public class GlobalExceptionFilter : IExceptionFilter
     {
-        private readonly ILogger<GlobalExceptionFilter> _logger;
-        private readonly IWebHostEnvironment _env;
+        private readonly ILogger<GlobalExceptionFilter> Logger;
+        private readonly IWebHostEnvironment Env;
 
         public GlobalExceptionFilter(ILogger<GlobalExceptionFilter> logger, IWebHostEnvironment env)
         {
-            _logger = logger;
-            _env = env;
+            Logger = logger;
+            Env = env;
         }
 
         public void OnException(ExceptionContext context)
         {
             // Log the exception
-            _logger.LogError(context.Exception,
+            Logger.LogError(context.Exception,
                 $"An error occurred in {context.ActionDescriptor.DisplayName}");
 
             // Check if it's an API request
@@ -31,10 +31,10 @@ namespace ValidationDemo.Filters
                 var errorResponse = new
                 {
                     success = false,
-                    message = _env.IsDevelopment()
+                    message = Env.IsDevelopment()
                         ? context.Exception.Message
                         : "An error occurred while processing your request.",
-                    stackTrace = _env.IsDevelopment() ? context.Exception.StackTrace : null
+                    stackTrace = Env.IsDevelopment() ? context.Exception.StackTrace : null
                 };
 
                 context.Result = new JsonResult(errorResponse)
@@ -45,7 +45,7 @@ namespace ValidationDemo.Filters
             else
             {
                 // MVC error page
-                var errorMessage = _env.IsDevelopment()
+                var errorMessage = Env.IsDevelopment()
                     ? context.Exception.Message
                     : "An unexpected error occurred. Please try again later.";
 
@@ -57,7 +57,7 @@ namespace ValidationDemo.Filters
                         new ModelStateDictionary())
                     {
                         ["ErrorMessage"] = errorMessage,
-                        ["StackTrace"] = _env.IsDevelopment() ? context.Exception.StackTrace : null
+                        ["StackTrace"] = Env.IsDevelopment() ? context.Exception.StackTrace : null
                     }
                 };
             }

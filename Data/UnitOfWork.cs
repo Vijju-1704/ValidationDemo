@@ -5,7 +5,7 @@ namespace ValidationDemo.Repositories
     public class UnitOfWork : IUnitOfWork
     {
         private readonly ApplicationDbContext DbContext;
-        private IUserRepository? _users;
+        private IUserRepository? User;
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -16,8 +16,8 @@ namespace ValidationDemo.Repositories
         {
             get
             {
-                _users ??= new UserRepository(DbContext);
-                return _users;
+                User ??= new UserRepository(DbContext);
+                return User;
             }
         }
 

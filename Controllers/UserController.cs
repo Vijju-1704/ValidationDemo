@@ -12,14 +12,14 @@ namespace ValidationDemo.Controllers
     public class UserController : Controller
     {
         private readonly IUserService UserService;
-        private readonly IAuthorizationService _authorizationService;
+        private readonly IAuthorizationService AuthorizationService;
 
         public UserController(
             IUserService userService,
             IAuthorizationService authorizationService)
         {
             UserService = userService;
-            _authorizationService = authorizationService;
+            AuthorizationService = authorizationService;
         }
 
         // GET: /user/register
@@ -99,7 +99,7 @@ namespace ValidationDemo.Controllers
             //{
             //    return RedirectToAction("AccessDenied", "Account");
             //}
-            var authResult = await _authorizationService.AuthorizeAsync(User, null, new CanEditOwnProfileRequirement(id));
+            var authResult = await AuthorizationService.AuthorizeAsync(User, null, new CanEditOwnProfileRequirement(id));
             if (!authResult.Succeeded)
             {
                 return Forbid();
@@ -132,7 +132,7 @@ namespace ValidationDemo.Controllers
             //{
             //    return RedirectToAction("AccessDenied", "Account");
             //}
-            var authResult = await _authorizationService.AuthorizeAsync(User, null, new CanEditOwnProfileRequirement(id));
+            var authResult = await AuthorizationService.AuthorizeAsync(User, null, new CanEditOwnProfileRequirement(id));
             if (!authResult.Succeeded)
             {
                 return Forbid();
@@ -179,7 +179,7 @@ namespace ValidationDemo.Controllers
             //{
             //    return RedirectToAction("AccessDenied", "Account");
             //}
-            var authResult = await _authorizationService.AuthorizeAsync(User,null,new CanEditOwnProfileRequirement(id));
+            var authResult = await AuthorizationService.AuthorizeAsync(User,null,new CanEditOwnProfileRequirement(id));
             if (!authResult.Succeeded)
             {
                 return Forbid();

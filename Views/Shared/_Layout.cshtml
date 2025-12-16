@@ -15,6 +15,93 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+        /* Scrolling Users Banner Styles */
+        .users-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 0;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .users-banner-content {
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            animation: scroll-left 30s linear infinite;
+        }
+
+            .users-banner-content:hover {
+                animation-play-state: paused;
+            }
+
+        .user-badge {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin: 0 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+            .user-badge::before {
+                content: "👤";
+                margin-right: 6px;
+            }
+
+        .banner-label {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-right: 15px;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        @@keyframes scroll-left {
+        0% {
+            transform: translateX(100%);
+        }
+
+        100% {
+            transform: translateX(-100%);
+        }
+
+        }
+
+        /* Loading state */
+        .users-banner.loading .users-banner-content {
+            animation: none;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        @@keyframes spin {
+            to
+
+        {
+            transform: rotate(360deg);
+        }
+
+        }
+    </style>
 </head>
 <body>
         @if (!string.IsNullOrEmpty(watermarkText))
@@ -37,6 +124,11 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="User" asp-action="Register">
                                 <i class="bi bi-journal-arrow-up"></i> Register
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Test" asp-action="ThrowError">
+                                <i class="bi bi-journal-arrow-up"></i> test
                             </a>
                         </li>
 
@@ -125,6 +217,17 @@
                     </div>
                 </div>
             }
+            <!--  Active Users Scrolling Banner -->
+             @if (User.Identity?.IsAuthenticated == true){
+            <div class="users-banner" id="usersBanner">
+                <div class="users-banner-content" id="usersBannerContent">
+                    <span class="banner-label">
+                        <span class="loading-spinner"></span>
+                        
+                    </span>
+                </div>
+            </div>
+            }
             @RenderBody()
         </main>
     </div>
@@ -154,5 +257,44 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
+    <script>
+        // Fetch active users and display scrolling banner
+        async function loadActiveUsers() {
+            try {
+                const response = await fetch('@Url.Action("GetActiveUsers", "Home")');
+                const usernames = await response.json();
+
+                const banner = document.getElementById('usersBanner');
+                const content = document.getElementById('usersBannerContent');
+
+                if (usernames && usernames.length > 0) {
+                    // Build HTML for scrolling users
+                    let html = '<span class="banner-label">🟢 Active Users</span>';
+
+                    // Duplicate usernames for seamless loop
+                    const duplicatedUsers = [...usernames, ...usernames, ...usernames];
+
+                    duplicatedUsers.forEach(username => {
+                        html += `<span class="user-badge">${username}</span>`;
+                    });
+
+                    content.innerHTML = html;
+                    banner.classList.remove('loading');
+                } else {
+                    content.innerHTML = '<span class="banner-label"> No active users found</span>';
+                }
+            } catch (error) {
+                console.error('Error loading active users:', error);
+                document.getElementById('usersBannerContent').innerHTML =
+                    '<span class="banner-label"> Failed to load users</span>';
+            }
+        }
+
+        // Load users when page loads
+        document.addEventListener('DOMContentLoaded', loadActiveUsers);
+
+        // Refresh every 5 minutes (same as cache expiration)
+        setInterval(loadActiveUsers, 5 * 60 * 1000);
+    </script>
 </body>
 </html>

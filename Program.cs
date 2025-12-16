@@ -53,17 +53,28 @@ namespace ValidationDemo
             });
 
             // Authentication with Cookies
-            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(options =>
-                {
-                    options.LoginPath = "/account/login";
-                    options.LogoutPath = "/account/logout";
-                    options.AccessDeniedPath = "/account/accessdenied";
-                    options.ExpireTimeSpan = TimeSpan.FromHours(1);
-                    options.SlidingExpiration = true;
-                    options.Cookie.HttpOnly = true;
-                    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-                });
+            _ = builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            })
+           .AddCookie(options =>
+           {
+               options.LoginPath = "/account/login";
+               options.LogoutPath = "/account/logout";
+               options.AccessDeniedPath = "/account/accessdenied";
+               options.ExpireTimeSpan = TimeSpan.FromHours(1);
+               options.SlidingExpiration = true;
+               options.Cookie.HttpOnly = true;
+               options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+           })
+           .AddGoogle(googleOptions =>
+           {
+               googleOptions.ClientId += builder.Configuration["Authentication:Google:ClientId"];
+               googleOptions.ClientSecret += builder.Configuration["Authentication:Google:ClientSecret"];
+               googleOptions.CallbackPath = "/signin-google";
+               googleOptions.SaveTokens = true;
+           });
 
             builder.Services.AddAuthorization(options =>
             {
@@ -101,12 +112,9 @@ namespace ValidationDemo
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
-
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
-
             app.UseAuthentication();
             app.UseAuthorization();
             builder.Services.AddSession();
@@ -115,7 +123,6 @@ namespace ValidationDemo
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=User}/{action=Register}/{id?}");
-
             app.Run();
         }
     }

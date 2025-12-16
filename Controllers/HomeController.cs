@@ -7,11 +7,11 @@ namespace ValidationDemo.Controllers
     [Route("")]
     public class HomeController : Controller
     {
-        private readonly IUserService _userService;
+        private readonly IUserService UserService;
 
         public HomeController(IUserService userService)
         {
-            _userService = userService;
+            UserService = userService;
         }
 
         // GET: /
@@ -28,7 +28,7 @@ namespace ValidationDemo.Controllers
         public async Task<IActionResult> Dashboard()
         {
             var userId = int.Parse(User.FindFirst("UserId")!.Value);
-            var user = await _userService.GetUserByIdAsync(userId);
+            var user = await UserService.GetUserByIdAsync(userId);
 
             ViewBag.Username = user.Username;
             ViewBag.Email = user.Email;
@@ -43,7 +43,7 @@ namespace ValidationDemo.Controllers
         public async Task<IActionResult> Profile()
         {
             var userId = int.Parse(User.FindFirst("UserId")!.Value);
-            var user = await _userService.GetUserByIdAsync(userId);
+            var user = await UserService.GetUserByIdAsync(userId);
 
             if (user == null || !user.IsActive)
             {
@@ -51,6 +51,13 @@ namespace ValidationDemo.Controllers
             }
 
             return View(user);
+        }
+
+        [HttpGet("All-users")]
+        public async Task<IActionResult> GetActiveUsers()
+        {
+            var usernames = await UserService.GetActiveUsernamesAsync();
+            return Json(usernames);
         }
     }
 }

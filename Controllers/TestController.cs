@@ -4,17 +4,17 @@ namespace ValidationDemo.Controllers
 {
     public class TestController : Controller
     {
-        private readonly ILogger<TestController> _logger;
+        private readonly ILogger<TestController> Logger;
 
         public TestController(ILogger<TestController> logger)
         {
-            _logger = logger;
+            Logger = logger;
         }
 
         // Test 1: Throw a simple exception
         public IActionResult ThrowError()
         {
-            _logger.LogInformation("About to throw a test exception");
+            Logger.LogInformation("About to throw a test exception");
             throw new Exception("This is a test exception to see if GlobalExceptionFilter works!");
         }
 

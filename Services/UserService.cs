@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using Microsoft.Extensions.Caching.Memory;
+using System.Security.Cryptography;
 using System.Text;
 using ValidationDemo.Constants;
 using ValidationDemo.Models;
@@ -9,10 +10,12 @@ namespace ValidationDemo.Services
     public class UserService : IUserService
     {
         private readonly IUnitOfWork UnitOfWork;
+        private readonly IMemoryCache Cache;
 
-        public UserService(IUnitOfWork unitOfWork)
+        public UserService(IUnitOfWork unitOfWork, IMemoryCache cache)
         {
             UnitOfWork = unitOfWork;
+            Cache = cache;
         }
 
         // Register new user
@@ -68,6 +71,35 @@ namespace ValidationDemo.Services
             // Save to database
             var createdUser = await UnitOfWork.Users.CreateUserAsync(user);
             return (true, string.Format(Messages.UserRegistered, model.Username), createdUser);
+        }
+        public async Task<List<string>> GetActiveUsernamesAsync()
+        {
+            const string cacheKey = "active_usernames";
+
+            // Try to get from cache first
+            if (Cache.TryGetValue(cacheKey, out List<string>? cachedUsernames))
+            {
+                return cachedUsernames!;
+            }
+
+            // If not in cache, get from database
+            var usernames = await UnitOfWork.Users
+                .GetAllAsync()
+                .ContinueWith(t => t.Result
+                    .Where(u => u.IsActive) // Only active users
+                    .Select(u => u.Username) // Or u.Name
+                    .ToList());
+
+            // Store in cache for 5 minutes
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5),
+                Priority = CacheItemPriority.High
+            };
+
+            Cache.Set(cacheKey, usernames, cacheOptions);
+
+            return usernames!;
         }
 
         // Update user

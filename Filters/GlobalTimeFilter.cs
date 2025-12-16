@@ -6,11 +6,11 @@ namespace ValidationDemo.Filters
 {
     public class GlobalTimeFilter : IResultFilter
     {
-        private readonly IMemoryCache _cache;
+        private readonly IMemoryCache Cache;
 
         public GlobalTimeFilter(IMemoryCache cache)
         {
-            _cache = cache;
+            Cache = cache;
         }
 
         public void OnResultExecuting(ResultExecutingContext context)
@@ -20,11 +20,11 @@ namespace ValidationDemo.Filters
                 return;
 
             // Try to get cached time
-            if (!_cache.TryGetValue("GlobalTime", out DateTime cachedTime))
+            if (!Cache.TryGetValue("GlobalTime", out DateTime cachedTime))
             {
                 // Not in cache, store new time for 20 seconds
                 cachedTime = DateTime.Now;
-                _cache.Set("GlobalTime", cachedTime, TimeSpan.FromSeconds(20));
+                Cache.Set("GlobalTime", cachedTime, TimeSpan.FromSeconds(20));
             }
 
             // Add to ViewBag so all views can access it
