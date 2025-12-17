@@ -131,6 +131,11 @@
                                 <i class="bi bi-journal-arrow-up"></i> test
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Products" asp-action="Index">
+                                <i class="bi bi-box-seam"></i> Products (API)
+                            </a>
+                        </li>
 
                         @if (User.Identity?.IsAuthenticated == true)
                         {

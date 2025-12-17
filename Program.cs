@@ -44,6 +44,13 @@ namespace ValidationDemo
             // Memory Cache for the PageVisitTimeFilter
             builder.Services.AddMemoryCache();
 
+            // HttpClient for API calls
+            builder.Services.AddHttpClient<IProductApiService, ProductApiService>(client =>
+            {
+                client.BaseAddress = new Uri("https://localhost:7000"); // API URL
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+            });
+
             // Session
             builder.Services.AddSession(options =>
             {

@@ -83,12 +83,20 @@ namespace ValidationDemo.Services
             }
 
             // If not in cache, get from database
-            var usernames = await UnitOfWork.Users
-                .GetAllAsync()
-                .ContinueWith(t => t.Result
-                    .Where(u => u.IsActive) // Only active users
-                    .Select(u => u.Username) // Or u.Name
-                    .ToList());
+            //var usernames = await UnitOfWork.Users
+            //    .GetAllAsync()
+            //    .ContinueWith(t => t.Result
+            //        .Where(u => u.IsActive) // Only active users
+            //        .Select(u => u.Username) // Or u.Name
+            //        .ToList());
+            // If not in cache, get from database
+            var users = await UnitOfWork.Users.GetAllAsync();
+
+            var usernames = users
+                .Where(u => u.IsActive)
+                .Select(u => u.Username)
+                .ToList();
+
 
             // Store in cache for 5 minutes
             var cacheOptions = new MemoryCacheEntryOptions
