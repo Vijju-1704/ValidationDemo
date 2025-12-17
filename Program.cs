@@ -23,6 +23,17 @@ namespace ValidationDemo
                 options.Filters.Add<GlobalTimeFilter>();
                 options.Filters.Add<LogActionFilter>();
             });
+            builder.Services.AddHttpClient<IApiService, ApiService>(client =>
+            {
+                var baseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7001/api";
+                client.BaseAddress = new Uri(baseUrl);
+                client.Timeout = TimeSpan.FromSeconds(30);
+            })
+            .ConfigureHttpClient(client =>
+            {
+               client.DefaultRequestHeaders.Add("Accept", "application/json");
+            })
+            .SetHandlerLifetime(TimeSpan.FromMinutes(5));
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -51,6 +62,7 @@ namespace ValidationDemo
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
+
 
             // Authentication with Cookies
             _ = builder.Services.AddAuthentication(options =>

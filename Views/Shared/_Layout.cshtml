@@ -1,11 +1,11 @@
 ﻿@using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor HttpContextAccessor
 
-@{
+@* @{
     var userName = HttpContextAccessor.HttpContext?.Session.GetString("UserName");
     var userEmail = HttpContextAccessor.HttpContext?.Session.GetString("UserEmail");
     var watermarkText = !string.IsNullOrEmpty(userName) ? $"{userName} - {userEmail}" : "";
-}
+} *@
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -104,14 +104,14 @@
     </style>
 </head>
 <body>
-        @if (!string.IsNullOrEmpty(watermarkText))
+        @* @if (!string.IsNullOrEmpty(watermarkText))
         {
             @* <div class="watermark">@watermarkText</div> *@
-        <div class="watermark" style="top: 20%; left: 20%;">@watermarkText</div>
+        @* <div class="watermark" style="top: 20%; left: 20%;">@watermarkText</div>
         <div class="watermark" style="top: 40%; left: 60%;">@watermarkText</div>
         <div class="watermark" style="top: 60%; left: 30%;">@watermarkText</div>
         <div class="watermark" style="top: 80%; left: 70%;">@watermarkText</div>
-        }
+        } *@ 
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
@@ -127,7 +127,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Test" asp-action="ThrowError">
+                            <a class="nav-link text-dark" asp-controller="Test" asp-action="Index">
                                 <i class="bi bi-journal-arrow-up"></i> test
                             </a>
                         </li>
