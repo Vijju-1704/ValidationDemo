@@ -1,0 +1,182 @@
+﻿@model ValidationDemo.DTOs.ProductDto
+
+@{
+    ViewData["Title"] = "Product Details";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-box-seam"></i> Product Details
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Left Column -->
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <h5 class="text-muted mb-3">Basic Information</h5>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Product ID</label>
+                                    <p class="form-control-plaintext">@Model.Id</p>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Product Name</label>
+                                    <p class="form-control-plaintext">@Model.Name</p>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Description</label>
+                                    <p class="form-control-plaintext">@Model.Description</p>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Category</label>
+                                    <p class="form-control-plaintext">
+                                        <span class="badge bg-info fs-6">@Model.Category</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Column -->
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <h5 class="text-muted mb-3">Pricing & Inventory</h5>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Price</label>
+                                    <p class="form-control-plaintext">
+                                        <span class="fs-4 text-success fw-bold">$@Model.Price.ToString("N2")</span>
+                                    </p>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Stock Quantity</label>
+                                    <p class="form-control-plaintext">
+                                        <span class="badge bg-secondary fs-6">@Model.Stock units</span>
+                                        @if (Model.Stock < 10)
+                                        {
+                                            <span class="badge bg-warning text-dark ms-2">Low Stock</span>
+                                        }
+                                        else if (Model.Stock == 0)
+                                        {
+                                            <span class="badge bg-danger ms-2">Out of Stock</span>
+                                        }
+                                    </p>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Status</label>
+                                    <p class="form-control-plaintext">
+                                        @if (Model.IsActive)
+                                        {
+                                            <span class="badge bg-success fs-6">
+                                                <i class="bi bi-check-circle"></i> Active
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary fs-6">
+                                                <i class="bi bi-x-circle"></i> Inactive
+                                            </span>
+                                        }
+                                    </p>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Created Date</label>
+                                    <p class="form-control-plaintext">
+                                        @Model.CreatedDate.ToString("MMMM dd, yyyy")
+                                        <br />
+                                        <small class="text-muted">@Model.CreatedDate.ToString("hh:mm tt")</small>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Summary Card -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">Quick Summary</h6>
+                                    <div class="row text-center">
+                                        <div class="col-md-3">
+                                            <div class="p-3">
+                                                <i class="bi bi-tag-fill fs-2 text-primary"></i>
+                                                <p class="mb-0 mt-2 fw-bold">$@Model.Price.ToString("N2")</p>
+                                                <small class="text-muted">Unit Price</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="p-3">
+                                                <i class="bi bi-box-seam fs-2 text-info"></i>
+                                                <p class="mb-0 mt-2 fw-bold">@Model.Stock</p>
+                                                <small class="text-muted">In Stock</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="p-3">
+                                                <i class="bi bi-cash-stack fs-2 text-success"></i>
+                                                <p class="mb-0 mt-2 fw-bold">$@((Model.Price * Model.Stock).ToString("N2"))</p>
+                                                <small class="text-muted">Total Value</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="p-3">
+                                                <i class="bi bi-folder fs-2 text-warning"></i>
+                                                <p class="mb-0 mt-2 fw-bold">@Model.Category</p>
+                                                <small class="text-muted">Category</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4" />
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to List
+                        </a>
+                        <div>
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning text-white me-2">
+                                <i class="bi bi-pencil"></i> Edit
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Delete
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Optional: Add animations or interactive features
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fade in animation
+            document.querySelector('.card').style.animation = 'fadeIn 0.5s';
+        });
+    </script>
+    
+    <style>
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+}

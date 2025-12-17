@@ -57,5 +57,9 @@ namespace ValidationDemo.Models
         public bool IsActive { get; internal set; } = true;
 
         public DateTime? DeletedAt { get; set; }
+
+        [Required]
+        [MaxLength(50)]
+        public string Role { get; set; } = "User";
     }
 }

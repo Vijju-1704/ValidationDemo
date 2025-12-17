@@ -5,133 +5,153 @@ using ValidationDemo.Models;
 
 namespace ValidationDemo.Repositories
 {
-    public class UserRepository : IUserRepository
+    public class UserRepository : GenericRepository<UserEntity>, IUserRepository
     {
-        private readonly ApplicationDbContext DbContect;
-        public UserRepository(ApplicationDbContext context)
+        public UserRepository(ApplicationDbContext context) : base(context)
         {
-            DbContect = context;
         }
-        // Get user by ID
-        public async Task<UserEntity?> GetByIdAsync(int id)
+
+        // Override GetByIdAsync to throw exception if not found
+        public override async Task<UserEntity?> GetByIdAsync(int id)
         {
-            var user = await DbContect.Users.FindAsync(id);
+            var user = await base.GetByIdAsync(id);
             if (user == null)
             {
                 throw new InvalidOperationException(Messages.RepoUserNotFound);
             }
             return user;
         }
+
         // Get user by username
         public async Task<UserEntity?> GetByUsernameAsync(string username)
         {
-            var user = await DbContect.Users
-                .FirstOrDefaultAsync(u => u.Username == username);
+            var user = await FirstOrDefaultAsync(u => u.Username == username);
             if (user == null)
             {
                 throw new InvalidOperationException(Messages.RepoUserByUsernameNotFound);
             }
             return user;
         }
+
         // Get user by email
         public async Task<UserEntity?> GetByEmailAsync(string email)
         {
-            var user = await DbContect.Users
-                .FirstOrDefaultAsync(u => u.Email == email);
+            var user = await FirstOrDefaultAsync(u => u.Email == email);
             if (user == null)
             {
                 throw new InvalidOperationException(Messages.RepoUserByEmailNotFound);
             }
             return user;
         }
+
         // Get all active users
         public async Task<IEnumerable<UserEntity>> GetAllActiveUsersAsync()
         {
-            return await DbContect.Users
+            return await DbContext.Users
                 .Where(u => u.IsActive)
                 .OrderByDescending(u => u.CreatedAt)
                 .ToListAsync();
         }
+
         // Get all deleted users
         public async Task<IEnumerable<UserEntity>> GetAllDeletedUsersAsync()
         {
-            return await DbContect.Users
+            return await DbContext.Users
                 .Where(u => !u.IsActive)
                 .OrderByDescending(u => u.DeletedAt)
                 .ToListAsync();
         }
+
         // Check if username exists (excluding specific user ID)
         public async Task<bool> UsernameExistsAsync(string username, int? excludeUserId = null)
         {
-            return await DbContect.Users
-                            .AnyAsync(u =>
-                            u.Username == username &&
-                            u.IsActive &&
-                            (!excludeUserId.HasValue || u.Id != excludeUserId.Value));
+            return await AnyAsync(u =>
+                u.Username == username &&
+                u.IsActive &&
+                (!excludeUserId.HasValue || u.Id != excludeUserId.Value));
         }
+
         // Check if email exists (excluding specific user ID)
         public async Task<bool> EmailExistsAsync(string email, int? excludeUserId = null)
         {
-            return await DbContect.Users
-                            .AnyAsync(u =>
-                            u.Email == email &&
-                            u.IsActive &&
-                            (!excludeUserId.HasValue || u.Id != excludeUserId.Value));
+            return await AnyAsync(u =>
+                u.Email == email &&
+                u.IsActive &&
+                (!excludeUserId.HasValue || u.Id != excludeUserId.Value));
         }
+
+        // Get active user by username for authentication
+        public async Task<UserEntity?> GetActiveUserByUsernameAsync(string username)
+        {
+            return await FirstOrDefaultAsync(u => u.Username == username && u.IsActive);
+        }
+
         // Create new user
         public async Task<UserEntity> CreateUserAsync(UserEntity user)
         {
-            DbContect.Users.Add(user);
-            await DbContect.SaveChangesAsync();
+            await AddAsync(user);
+            await DbContext.SaveChangesAsync();
             return user;
         }
+
         // Update user
         public async Task<UserEntity> UpdateUserAsync(UserEntity user)
         {
             user.UpdatedAt = DateTime.UtcNow;
-            DbContect.Users.Update(user);
-            await DbContect.SaveChangesAsync();
+            Update(user);
+            await DbContext.SaveChangesAsync();
             return user;
         }
+
         // Soft delete user (set IsActive = false)
         public async Task<bool> SoftDeleteUserAsync(int id)
         {
-            var user = await GetByIdAsync(id);
+            var user = await DbSet.FindAsync(id);
 
             if (user == null || !user.IsActive)
             {
                 return false;
             }
+
             user.IsActive = false;
             user.DeletedAt = DateTime.UtcNow;
-            DbContect.Users.Update(user);
-            await DbContect.SaveChangesAsync();
+            Update(user);
+            await DbContext.SaveChangesAsync();
             return true;
         }
+
         // Restore deleted user
         public async Task<bool> RestoreUserAsync(int id)
         {
-            var user = await GetByIdAsync(id);
+            var user = await DbSet.FindAsync(id);
+
             if (user == null || user.IsActive)
             {
                 return false;
             }
+
             user.IsActive = true;
             user.DeletedAt = null;
             user.UpdatedAt = DateTime.UtcNow;
-            DbContect.Users.Update(user);
-            await DbContect.SaveChangesAsync();
+            Update(user);
+            await DbContext.SaveChangesAsync();
             return true;
         }
 
-        // Save changes to database
-        public async Task<bool> SaveChangesAsync()
+        // Statistics methods
+        public async Task<int> GetTotalCountAsync()
         {
-            return await DbContect.SaveChangesAsync() > 0;
+            return await CountAsync();
         }
-        public Task<bool> UserExistsAsync(EditUserModel model, int id)
+
+        public async Task<int> GetActiveCountAsync()
         {
-            throw new NotImplementedException();
+            return await CountAsync(u => u.IsActive);
+        }
+
+        public async Task<int> GetDeletedCountAsync()
+        {
+            return await CountAsync(u => !u.IsActive);
         }
     }
 }

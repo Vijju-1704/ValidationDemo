@@ -1,105 +1,63 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
-using ValidationDemo.Models;
+using ValidationDemo.Services;
+using ValidationDemo.Filters;
 
 namespace ValidationDemo.Controllers
 {
+    [Route("")]
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly IUserService UserService;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(IUserService userService)
         {
-            _logger = logger;
+            UserService = userService;
         }
 
+        // GET: /
+        [HttpGet("")]
         public IActionResult Index()
         {
             return View();
         }
 
-        public IActionResult Privacy()
+        // GET: /dashboard (Protected - requires login)
+        [HttpGet("dashboard")]
+        [CustomAuthorize] // Our custom authorization filter
+        [ServiceFilter(typeof(PageVisitTimeFilter))] // Cache visit time
+        public async Task<IActionResult> Dashboard()
         {
+            var userId = int.Parse(User.FindFirst("UserId")!.Value);
+            var user = await UserService.GetUserByIdAsync(userId);
+
+            ViewBag.Username = user.Username;
+            ViewBag.Email = user.Email;
+
             return View();
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        // GET: /profile (Protected)
+        [HttpGet("profile")]
+        [CustomAuthorize]
+        [ServiceFilter(typeof(PageVisitTimeFilter))]
+        public async Task<IActionResult> Profile()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            var userId = int.Parse(User.FindFirst("UserId")!.Value);
+            var user = await UserService.GetUserByIdAsync(userId);
+
+            if (user == null || !user.IsActive)
+            {
+                return RedirectToAction("Logout", "Account");
+            }
+
+            return View(user);
+        }
+
+        [HttpGet("All-users")]
+        public async Task<IActionResult> GetActiveUsers()
+        {
+            var usernames = await UserService.GetActiveUsernamesAsync();
+            return Json(usernames);
         }
     }
 }
-//using Microsoft.AspNetCore.Mvc;
-//using System.Reflection;
-//using ValidationDemo.Models;
-
-//namespace ValidationDemo.Controllers
-//{
-//    [Route("user")]
-//    public class UserController : Controller
-//    {
-//        [HttpGet("register")]
-//        public IActionResult Register([FromQuery] string referral = null)
-//        {
-//            if (!string.IsNullOrEmpty(referral))
-//            {
-//                ViewBag.Referral = $"Referred by : {referral}";
-//            }
-//            return View(new UserRegistrationModel());
-//        }
-
-//        [HttpPost("register")]
-//        [ValidateAntiForgeryToken]
-//        public IActionResult Register([FromForm] UserRegistrationModel model)
-//        {
-//            if (ModelState.IsValid)
-//            {
-//                TempData["SuccessMessage"] = $"Registration successful for {model.Username}!";
-//                return RedirectToAction("Success", new { id = model.Username });
-//            }
-//            return View(model);
-//        }
-
-
-//        // GET: /user/success/johndoe
-//        // FromRoute example - the {id} parameter comes from the route
-//        [HttpGet("success/{id}")]
-//        public IActionResult Success([FromRoute] string id)
-//        {
-//            ViewBag.Username = id;
-//            return View();
-//        }
-
-//        [HttpPost("api/register")]
-//        public IActionResult ApiRegister([FromBody] UserRegistrationModel model)
-//        {
-//            if (ModelState.IsValid)
-//            {
-//                return Ok(new { success = true, message = "User registered successfully", username = model.Username });
-//            }
-
-//            var errors = ModelState.Values
-//                .SelectMany(v => v.Errors)
-//                .Select(e => e.ErrorMessage);
-
-//            return BadRequest(new { success = false, errors });
-//        }
-
-//        [HttpGet("details/{userId}")]
-//        public IActionResult GetUserDetails(
-//            [FromRoute] int userId,
-//            [FromQuery] string format = "json",
-//            [FromHeader(Name = "User-Agent")] string userAgent = null)
-//        {
-//            return Ok(new
-//            {
-//                userId,
-//                format,
-//                userAgent,
-//                message = "This demonstrates FromRoute, FromQuery, and FromHeader"
-//            });
-//        }
-//    }
-//}
-

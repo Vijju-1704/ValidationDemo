@@ -1,51 +1,305 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    var userName = HttpContextAccessor.HttpContext?.Session.GetString("UserName");
+    var userEmail = HttpContextAccessor.HttpContext?.Session.GetString("UserEmail");
+    var watermarkText = !string.IsNullOrEmpty(userName) ? $"{userName} - {userEmail}" : "";
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>@ViewData["Title"] - My Users</title>
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-	<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ValidationDemo</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+        /* Scrolling Users Banner Styles */
+        .users-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 0;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .users-banner-content {
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            animation: scroll-left 30s linear infinite;
+        }
+
+            .users-banner-content:hover {
+                animation-play-state: paused;
+            }
+
+        .user-badge {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin: 0 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+            .user-badge::before {
+                content: "👤";
+                margin-right: 6px;
+            }
+
+        .banner-label {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-right: 15px;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        @@keyframes scroll-left {
+        0% {
+            transform: translateX(100%);
+        }
+
+        100% {
+            transform: translateX(-100%);
+        }
+
+        }
+
+        /* Loading state */
+        .users-banner.loading .users-banner-content {
+            animation: none;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        @@keyframes spin {
+            to
+
+        {
+            transform: rotate(360deg);
+        }
+
+        }
+    </style>
 </head>
 <body>
-	<header>
-		<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-			<div class="container">
-				<a class="navbar-brand fw-bold fs-3" asp-controller="User" asp-action="Register">User Portal 👥</a>
-				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-					<span class="navbar-toggler-icon"></span>
-				</button>
-				<div class="collapse navbar-collapse" id="navbarNav">
-					<ul class="navbar-nav ms-auto">
-						<li class="nav-item">
-							<a class="nav-link" asp-controller="User" asp-action="Register">Register</a>
-						</li>
+        @if (!string.IsNullOrEmpty(watermarkText))
+        {
+            @* <div class="watermark">@watermarkText</div> *@
+        <div class="watermark" style="top: 20%; left: 20%;">@watermarkText</div>
+        <div class="watermark" style="top: 40%; left: 60%;">@watermarkText</div>
+        <div class="watermark" style="top: 60%; left: 30%;">@watermarkText</div>
+        <div class="watermark" style="top: 80%; left: 70%;">@watermarkText</div>
+        }
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-area="" asp-controller="User" asp-action="Register">ValidationDemo</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="User" asp-action="Register">
+                                <i class="bi bi-journal-arrow-up"></i> Register
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Test" asp-action="ThrowError">
+                                <i class="bi bi-journal-arrow-up"></i> test
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Products" asp-action="Index">
+                                <i class="bi bi-box-seam"></i> Products (API)
+                            </a>
+                        </li>
 
-						@if (Context.Session.GetString("Registered") == "true")
-						{
-							<li class="nav-item">
-								<a class="nav-link" asp-controller="UserManagement" asp-action="List">View Users</a>
-							</li>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">
+                                    <i class="bi bi-house"></i> Home
+                                </a>
+                            </li>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="UserManagement" asp-action="List">
+                                        <i class="bi bi-people-fill"></i> Manage Users
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="UserManagement" asp-action="DeletedUsers">
+                                        <i class="bi bi-trash"></i> Deleted Users
+                                    </a>
+                                </li>
+                            }
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Home" asp-action="Dashboard">
+                                    <i class="bi bi-speedometer2"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="User" asp-action="Details" asp-route-id="@User.FindFirst("UserId")?.Value">
+                                    <i class="bi bi-person-circle"></i> My Profile
+                                </a>
+                            </li>
+                        }
+                    </ul>
 
-							<li class="nav-item">
-								<a class="nav-link" asp-controller="UserManagement" asp-action="DeletedUsers">Deleted Users</a>
-							</li>
-						}
-					</ul>
-				</div>
-			</div>
-		</nav>
-	</header>
-	<main role="main" class="pb-3">
-		@RenderBody()
-	</main>
-	<footer class="border-top footer text-muted">
-		<div class="container text-center py-3">
-			&copy; 2025 - UserHub -User Management Application
-		</div>
-	</footer>
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-	<script src="~/js/site.js" asp-append-version="true"></script>
-	@await RenderSectionAsync("Scripts", required: false)
+                    <ul class="navbar-nav">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-person-circle"></i> @User.Identity.Name
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <span class="badge bg-danger">Admin</span>
+                                    }
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="User" asp-action="Details" asp-route-id="@User.FindFirst("UserId")?.Value">
+                                            <i class="bi bi-person"></i> My Profile
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form asp-controller="Account" asp-action="Logout" method="post">
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="bi bi-box-arrow-right"></i> Logout
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">
+                                    <i class="bi bi-box-arrow-in-right"></i> Login
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @if (ViewBag.CurrentTime != null)
+            {
+                <div class="container mt-3">
+                    <div class="alert alert-info">
+                        <strong>⏰ Current Time:</strong> @ViewBag.CurrentTime.ToString("hh:mm:ss tt")
+                        <small class="text-muted">(Cached for 20 seconds)</small>
+                    </div>
+                </div>
+            }
+            <!--  Active Users Scrolling Banner -->
+             @if (User.Identity?.IsAuthenticated == true){
+            <div class="users-banner" id="usersBanner">
+                <div class="users-banner-content" id="usersBannerContent">
+                    <span class="banner-label">
+                        <span class="loading-spinner"></span>
+                        
+                    </span>
+                </div>
+            </div>
+            }
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container text-center py-3">
+            &copy; 2025 - UserHub - User Management Application
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <span class="ms-3">
+                    <i class="bi bi-check-circle-fill text-success"></i>
+                    Logged in as <strong>@User.Identity.Name</strong>
+                </span>
+            }
+            @* STATISTICS IN FOOTER
+            <div class="col-md-6">
+                <div class="small">
+                    <h6 class="mb-2">Quick Stats</h6>
+                    <vc:user-stats></vc:user-stats>
+                </div>
+            </div> *@
+            
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+    <script>
+        // Fetch active users and display scrolling banner
+        async function loadActiveUsers() {
+            try {
+                const response = await fetch('@Url.Action("GetActiveUsers", "Home")');
+                const usernames = await response.json();
+
+                const banner = document.getElementById('usersBanner');
+                const content = document.getElementById('usersBannerContent');
+
+                if (usernames && usernames.length > 0) {
+                    // Build HTML for scrolling users
+                    let html = '<span class="banner-label">🟢 Active Users</span>';
+
+                    // Duplicate usernames for seamless loop
+                    const duplicatedUsers = [...usernames, ...usernames, ...usernames];
+
+                    duplicatedUsers.forEach(username => {
+                        html += `<span class="user-badge">${username}</span>`;
+                    });
+
+                    content.innerHTML = html;
+                    banner.classList.remove('loading');
+                } else {
+                    content.innerHTML = '<span class="banner-label"> No active users found</span>';
+                }
+            } catch (error) {
+                console.error('Error loading active users:', error);
+                document.getElementById('usersBannerContent').innerHTML =
+                    '<span class="banner-label"> Failed to load users</span>';
+            }
+        }
+
+        // Load users when page loads
+        document.addEventListener('DOMContentLoaded', loadActiveUsers);
+
+        // Refresh every 5 minutes (same as cache expiration)
+        setInterval(loadActiveUsers, 5 * 60 * 1000);
+    </script>
 </body>
 </html>

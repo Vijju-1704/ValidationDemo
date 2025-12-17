@@ -1,4 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using ValidationDemo.Authorization;
+using ValidationDemo.Constants;
 using ValidationDemo.Models;
 using ValidationDemo.Services;
 
@@ -8,14 +12,19 @@ namespace ValidationDemo.Controllers
     public class UserController : Controller
     {
         private readonly IUserService UserService;
+        private readonly IAuthorizationService AuthorizationService;
 
-        public UserController(IUserService userService)
+        public UserController(
+            IUserService userService,
+            IAuthorizationService authorizationService)
         {
             UserService = userService;
+            AuthorizationService = authorizationService;
         }
 
         // GET: /user/register
         [HttpGet("register")]
+        [AllowAnonymous] // Anyone can register
         public IActionResult Register([FromQuery] string? referral = null)
         {
             if (!string.IsNullOrEmpty(referral))
@@ -28,6 +37,7 @@ namespace ValidationDemo.Controllers
 
         // POST: /user/register
         [HttpPost("register")]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register([FromForm] UserRegistrationModel model)
         {
@@ -41,8 +51,6 @@ namespace ValidationDemo.Controllers
                     return View(model);
                 }
 
-                HttpContext.Session.SetString("Registered", "true");
-
                 TempData["SuccessMessage"] = result.Message;
                 return RedirectToAction("Success", new { id = result.User.Id });
             }
@@ -52,6 +60,7 @@ namespace ValidationDemo.Controllers
 
         // GET: /user/success/{id}
         [HttpGet("success/{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> Success([FromRoute] int id)
         {
             var user = await UserService.GetUserByIdAsync(id);
@@ -68,6 +77,7 @@ namespace ValidationDemo.Controllers
 
         // GET: /user/details/{id}
         [HttpGet("details/{id}")]
+        [Authorize] // Must be logged in
         public async Task<IActionResult> Details([FromRoute] int id)
         {
             var user = await UserService.GetUserByIdAsync(id);
@@ -77,11 +87,30 @@ namespace ValidationDemo.Controllers
                 return NotFound();
             }
 
+            //// Get current logged-in user ID
+            //var currentUserIdClaim = User.FindFirst(AppClaims.UserId);
+            //var currentUserId = currentUserIdClaim != null ? int.Parse(currentUserIdClaim.Value) : 0;
+
+            //// Check if user is viewing their own profile OR is Admin
+            //var isAdmin = User.IsInRole(AppRoles.Admin);
+            //var isOwnProfile = currentUserId == id;
+
+            //if (!isAdmin && !isOwnProfile)
+            //{
+            //    return RedirectToAction("AccessDenied", "Account");
+            //}
+            var authResult = await AuthorizationService.AuthorizeAsync(User, null, new CanEditOwnProfileRequirement(id));
+            if (!authResult.Succeeded)
+            {
+                return Forbid();
+            }
+
             return View(user);
         }
 
         // GET: /user/edit/{id}
         [HttpGet("edit/{id}")]
+        [Authorize] // Must be logged in
         public async Task<IActionResult> Edit([FromRoute] int id)
         {
             var user = await UserService.GetUserByIdAsync(id);
@@ -89,6 +118,24 @@ namespace ValidationDemo.Controllers
             if (user == null || !user.IsActive)
             {
                 return NotFound();
+            }
+
+            // Get current logged-in user ID
+            //var currentUserIdClaim = User.FindFirst(AppClaims.UserId);
+            //var currentUserId = currentUserIdClaim != null ? int.Parse(currentUserIdClaim.Value) : 0;
+
+            //// Check authorization: Can only edit own profile OR is Admin
+            //var isAdmin = User.IsInRole(AppRoles.Admin);
+            //var isOwnProfile = currentUserId == id;
+
+            //if (!isAdmin && !isOwnProfile)
+            //{
+            //    return RedirectToAction("AccessDenied", "Account");
+            //}
+            var authResult = await AuthorizationService.AuthorizeAsync(User, null, new CanEditOwnProfileRequirement(id));
+            if (!authResult.Succeeded)
+            {
+                return Forbid();
             }
 
             // Map UserEntity to EditUserModel
@@ -111,6 +158,7 @@ namespace ValidationDemo.Controllers
 
         // POST: /user/edit/{id}
         [HttpPost("edit/{id}")]
+        [Authorize]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit([FromRoute] int id, [FromForm] EditUserModel model)
         {
@@ -119,6 +167,23 @@ namespace ValidationDemo.Controllers
                 return BadRequest();
             }
 
+            // Get current logged-in user ID
+            //var currentUserIdClaim = User.FindFirst(AppClaims.UserId);
+            //var currentUserId = currentUserIdClaim != null ? int.Parse(currentUserIdClaim.Value) : 0;
+
+            // Check authorization
+            //var isAdmin = User.IsInRole(AppRoles.Admin);
+            //var isOwnProfile = currentUserId == id;
+
+            //if (!isAdmin && !isOwnProfile)
+            //{
+            //    return RedirectToAction("AccessDenied", "Account");
+            //}
+            var authResult = await AuthorizationService.AuthorizeAsync(User,null,new CanEditOwnProfileRequirement(id));
+            if (!authResult.Succeeded)
+            {
+                return Forbid();
+            }
             if (ModelState.IsValid)
             {
                 var result = await UserService.UpdateUserAsync(model);
@@ -128,11 +193,9 @@ namespace ValidationDemo.Controllers
                     ModelState.AddModelError(string.Empty, result.Message);
                     return View(model);
                 }
-
                 TempData["SuccessMessage"] = result.Message;
                 return RedirectToAction("Details", new { id = result.User.Id });
             }
-
             return View(model);
         }
     }

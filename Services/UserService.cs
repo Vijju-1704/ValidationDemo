@@ -1,18 +1,23 @@
-﻿using ValidationDemo.Models;
-using ValidationDemo.Repositories;
+﻿using Microsoft.Extensions.Caching.Memory;
 using System.Security.Cryptography;
 using System.Text;
 using ValidationDemo.Constants;
+using ValidationDemo.Models;
+using ValidationDemo.Repositories;
 
 namespace ValidationDemo.Services
 {
     public class UserService : IUserService
     {
-        private readonly IUserRepository UserRepository;
-        public UserService(IUserRepository UserRepository)
+        private readonly IUnitOfWork UnitOfWork;
+        private readonly IMemoryCache Cache;
+
+        public UserService(IUnitOfWork unitOfWork, IMemoryCache cache)
         {
-            this.UserRepository = UserRepository;
+            UnitOfWork = unitOfWork;
+            Cache = cache;
         }
+
         // Register new user
         public async Task<(bool Success, string Message, UserEntity User)> RegisterUserAsync(UserRegistrationModel model)
         {
@@ -21,26 +26,31 @@ namespace ValidationDemo.Services
             {
                 return (false, Messages.UsernameRequired, null!);
             }
+
             // Check if username exists
-            if (await UserRepository.UsernameExistsAsync(model.Username ?? string.Empty))
+            if (await UnitOfWork.Users.UsernameExistsAsync(model.Username ?? string.Empty))
             {
                 return (false, Messages.UsernameExists, null!);
             }
+
             // Validate email is not null or whitespace
             if (string.IsNullOrWhiteSpace(model.Email))
             {
                 return (false, Messages.EmailRequired, null!);
             }
+
             // Check if email exists
-            if (await UserRepository.EmailExistsAsync(model.Email!))
+            if (await UnitOfWork.Users.EmailExistsAsync(model.Email!))
             {
                 return (false, Messages.EmailExists, null!);
             }
+
             // Validate password is not null or whitespace
             if (string.IsNullOrWhiteSpace(model.Password))
             {
                 return (false, Messages.PasswordRequired, null!);
             }
+
             // Create user entity with ALL new fields
             var user = new UserEntity
             {
@@ -53,20 +63,58 @@ namespace ValidationDemo.Services
                 PhoneNumber = model.PhoneNumber,
                 Country = (Enums.CountryEnum)model.Country,
                 Website = model.Website ?? string.Empty,
-                //AcceptTerms = model.AcceptTerms,
                 SubscribeNewsletter = model.SubscribeNewsletter,
                 CreatedAt = DateTime.UtcNow,
                 IsActive = true
             };
+
             // Save to database
-            var createdUser = await UserRepository.CreateUserAsync(user);
+            var createdUser = await UnitOfWork.Users.CreateUserAsync(user);
             return (true, string.Format(Messages.UserRegistered, model.Username), createdUser);
         }
+        public async Task<List<string>> GetActiveUsernamesAsync()
+        {
+            const string cacheKey = "active_usernames";
+
+            // Try to get from cache first
+            if (Cache.TryGetValue(cacheKey, out List<string>? cachedUsernames))
+            {
+                return cachedUsernames!;
+            }
+
+            // If not in cache, get from database
+            //var usernames = await UnitOfWork.Users
+            //    .GetAllAsync()
+            //    .ContinueWith(t => t.Result
+            //        .Where(u => u.IsActive) // Only active users
+            //        .Select(u => u.Username) // Or u.Name
+            //        .ToList());
+            // If not in cache, get from database
+            var users = await UnitOfWork.Users.GetAllAsync();
+
+            var usernames = users
+                .Where(u => u.IsActive)
+                .Select(u => u.Username)
+                .ToList();
+
+
+            // Store in cache for 5 minutes
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5),
+                Priority = CacheItemPriority.High
+            };
+
+            Cache.Set(cacheKey, usernames, cacheOptions);
+
+            return usernames!;
+        }
+
         // Update user
         public async Task<(bool Success, string Message, UserEntity User)> UpdateUserAsync(EditUserModel model)
         {
             // Get user
-            var user = await UserRepository.GetByIdAsync(model.Id);
+            var user = await UnitOfWork.Users.GetByIdAsync(model.Id);
             if (user?.IsActive != true)
             {
                 return (false, Messages.UserNotFound, null!);
@@ -77,19 +125,23 @@ namespace ValidationDemo.Services
             {
                 return (false, Messages.UsernameRequired, null!);
             }
-            if (await UserRepository.UsernameExistsAsync(model.Username!, model.Id))
+
+            if (await UnitOfWork.Users.UsernameExistsAsync(model.Username!, model.Id))
             {
                 return (false, Messages.UsernameExists, null!);
             }
+
             // Check email availability (excluding current user)
             if (string.IsNullOrWhiteSpace(model.Email))
             {
                 return (false, Messages.EmailRequired, null!);
             }
-            if (await UserRepository.EmailExistsAsync(model.Email!, model.Id))
+
+            if (await UnitOfWork.Users.EmailExistsAsync(model.Email!, model.Id))
             {
                 return (false, Messages.EmailExists, null!);
             }
+
             // Update ALL properties including new fields
             user.Username = model.Username;
             user.Email = model.Email;
@@ -100,72 +152,86 @@ namespace ValidationDemo.Services
             user.Country = (Enums.CountryEnum)model.Country;
             user.Website = model.Website ?? string.Empty;
             user.SubscribeNewsletter = model.SubscribeNewsletter;
+
             if (!string.IsNullOrWhiteSpace(model.NewPassword))
             {
                 user.PasswordHash = HashPassword(model.NewPassword);
             }
+
             // Save changes
-            var updatedUser = await UserRepository.UpdateUserAsync(user);
+            var updatedUser = await UnitOfWork.Users.UpdateUserAsync(user);
             return (true, string.Format(Messages.UserUpdated, model.Username), updatedUser);
         }
+
         // Get user by ID
         public async Task<UserEntity> GetUserByIdAsync(int id)
         {
-            var user = await UserRepository.GetByIdAsync(id);
+            var user = await UnitOfWork.Users.GetByIdAsync(id);
             if (user == null)
             {
                 throw new InvalidOperationException(Messages.UserNotFound);
             }
             return user;
         }
+
         // Get all active users
         public async Task<IEnumerable<UserEntity>> GetAllActiveUsersAsync()
         {
-            return await UserRepository.GetAllActiveUsersAsync();
+            return await UnitOfWork.Users.GetAllActiveUsersAsync();
         }
+
         // Get all deleted users
         public async Task<IEnumerable<UserEntity>> GetAllDeletedUsersAsync()
         {
-            return await UserRepository.GetAllDeletedUsersAsync();
+            return await UnitOfWork.Users.GetAllDeletedUsersAsync();
         }
+
         // Soft delete user
         public async Task<(bool Success, string Message)> DeleteUserAsync(int id)
         {
-            var user = await UserRepository.GetByIdAsync(id);
+            var user = await UnitOfWork.Users.GetByIdAsync(id);
             if (user == null)
             {
                 return (false, Messages.UserNotFound);
             }
+
             if (!user.IsActive)
             {
                 return (false, Messages.UserAlreadyDeleted);
             }
-            var success = await UserRepository.SoftDeleteUserAsync(id);
+
+            var success = await UnitOfWork.Users.SoftDeleteUserAsync(id);
             if (success)
             {
                 return (true, string.Format(Messages.UserDeleted, user.Username));
             }
+
             return (false, Messages.FailedToDeleteUser);
         }
+
         // Restore deleted user
         public async Task<(bool Success, string Message)> RestoreUserAsync(int id)
         {
-            var user = await UserRepository.GetByIdAsync(id);
+            var user = await UnitOfWork.Users.GetByIdAsync(id);
             if (user == null)
             {
                 return (false, Messages.UserNotFound);
             }
+
             if (user.IsActive)
             {
                 return (false, Messages.UserRestored);
             }
-            var success = await UserRepository.RestoreUserAsync(id);
+
+            var success = await UnitOfWork.Users.RestoreUserAsync(id);
             if (success)
             {
                 return (true, string.Format(Messages.UserRestored, user.Username));
             }
+
             return (false, Messages.FailedToRestoreUser);
         }
+
         // Validate username
         public async Task<(bool IsValid, string ErrorMessage)> ValidateUsernameAsync(string username, int? excludeUserId = null)
         {
@@ -173,12 +239,15 @@ namespace ValidationDemo.Services
             {
                 return (false, Messages.UsernameRequired);
             }
-            if (await UserRepository.UsernameExistsAsync(username, excludeUserId))
+
+            if (await UnitOfWork.Users.UsernameExistsAsync(username, excludeUserId))
             {
                 return (false, Messages.UsernameExists);
             }
+
             return (true, Messages.Empty);
         }
+
         // Validate email
         public async Task<(bool IsValid, string ErrorMessage)> ValidateEmailAsync(string email, int? excludeUserId = null)
         {
@@ -186,12 +255,33 @@ namespace ValidationDemo.Services
             {
                 return (false, Messages.EmailRequired);
             }
-            if (await UserRepository.EmailExistsAsync(email, excludeUserId))
+
+            if (await UnitOfWork.Users.EmailExistsAsync(email, excludeUserId))
             {
                 return (false, Messages.EmailExists);
             }
+
             return (true, Messages.Empty);
         }
+
+        // Validate user credentials for login
+        public async Task<UserEntity?> ValidateUserAsync(string username, string password)
+        {
+            var user = await UnitOfWork.Users.GetActiveUserByUsernameAsync(username);
+
+            if (user == null)
+            {
+                return null;
+            }
+
+            if (user.PasswordHash == HashPassword(password))
+            {
+                return user;
+            }
+
+            return null;
+        }
+
         // Helper method to hash password
         private string HashPassword(string password)
         {
@@ -200,6 +290,56 @@ namespace ValidationDemo.Services
                 var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
                 return Convert.ToBase64String(hashedBytes);
             }
+        }
+
+        // ViewComponent related methods
+        public async Task<int> GetTotalUsersCountAsync()
+        {
+            return await UnitOfWork.Users.GetTotalCountAsync();
+        }
+
+        public async Task<int> GetActiveUsersCountAsync()
+        {
+            return await UnitOfWork.Users.GetActiveCountAsync();
+        }
+
+        public async Task<int> GetDeletedUsersCountAsync()
+        {
+            return await UnitOfWork.Users.GetDeletedCountAsync();
+        }
+
+        // Add this method to UserService class
+        public async Task<(bool Success, string Message)> CreateAdminUserAsync(
+            string username,
+            string email,
+            string password)
+        {
+            // Check if admin already exists
+            var existingAdmin = await UnitOfWork.Users.GetActiveUserByUsernameAsync(username);
+            if (existingAdmin != null)
+            {
+                return (false, "Admin user already exists");
+            }
+
+            var adminUser = new UserEntity
+            {
+                Username = username,
+                Email = email,
+                PasswordHash = HashPassword(password),
+                DateOfBirth = new DateTime(1990, 1, 1),
+                Age = 33,
+                Gender = "Male",
+                PhoneNumber = "9999999999",
+                Country = Enums.CountryEnum.India,
+                Website = "",
+                SubscribeNewsletter = false,
+                CreatedAt = DateTime.UtcNow,
+                IsActive = true,
+                Role = AppRoles.Admin // Set as Admin
+            };
+
+            await UnitOfWork.Users.CreateUserAsync(adminUser);
+            return (true, "Admin user created successfully");
         }
     }
 }
