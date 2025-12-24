@@ -9,13 +9,13 @@ namespace YourMvcProject.Controllers
 {
     public class ProductsController : Controller
     {
-        private readonly IApiService _apiService;
-        private readonly ILogger<ProductsController> _logger;
+        private readonly IApiService ApiService;
+        private readonly ILogger<ProductsController> Logger;
 
         public ProductsController(IApiService apiService, ILogger<ProductsController> logger)
         {
-            _apiService = apiService;
-            _logger = logger;
+            ApiService = apiService;
+            Logger = logger;
         }
 
         // GET: Products
@@ -26,8 +26,8 @@ namespace YourMvcProject.Controllers
 
             try
             {
-                categories = await _apiService.GetCategoriesAsync() ?? new List<string>();
-                var products = await _apiService.GetProductsAsync(category, isActive) ?? new List<ProductDto>();
+                categories = await ApiService.GetCategoriesAsync() ?? new List<string>();
+                var products = await ApiService.GetProductsAsync(category, isActive) ?? new List<ProductDto>();
 
                 ViewBag.Categories = categories;
                 ViewBag.SelectedCategory = category;
@@ -37,7 +37,7 @@ namespace YourMvcProject.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error loading products");
+                Logger.LogError(ex, "Error loading products");
 
                 ViewBag.Categories = categories;
                 ViewBag.SelectedCategory = category;
@@ -54,7 +54,7 @@ namespace YourMvcProject.Controllers
         {
             try
             {
-                var product = await _apiService.GetProductByIdAsync(id);
+                var product = await ApiService.GetProductByIdAsync(id);
 
                 if (product == null)
                 {
@@ -66,7 +66,7 @@ namespace YourMvcProject.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error loading product details for ID {ProductId}", id);
+                Logger.LogError(ex, "Error loading product details for ID {ProductId}", id);
                 TempData["ErrorMessage"] = "An error occurred while loading product details";
                 return RedirectToAction(nameof(Index));
             }
@@ -75,7 +75,7 @@ namespace YourMvcProject.Controllers
         // GET: Products/Create
         public async Task<IActionResult> Create()
         {
-            ViewBag.Categories = await _apiService.GetCategoriesAsync() ?? new List<string>();
+            ViewBag.Categories = await ApiService.GetCategoriesAsync() ?? new List<string>();
             return View();
         }
 
@@ -88,11 +88,11 @@ namespace YourMvcProject.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    ViewBag.Categories = await _apiService.GetCategoriesAsync() ?? new List<string>();
+                    ViewBag.Categories = await ApiService.GetCategoriesAsync() ?? new List<string>();
                     return View(productDto);
                 }
 
-                var createdProduct = await _apiService.CreateProductAsync(productDto);
+                var createdProduct = await ApiService.CreateProductAsync(productDto);
 
                 if (createdProduct != null)
                 {
@@ -101,14 +101,14 @@ namespace YourMvcProject.Controllers
                 }
 
                 ModelState.AddModelError(string.Empty, "Failed to create product");
-                ViewBag.Categories = await _apiService.GetCategoriesAsync() ?? new List<string>();
+                ViewBag.Categories = await ApiService.GetCategoriesAsync() ?? new List<string>();
                 return View(productDto);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating product");
+                Logger.LogError(ex, "Error creating product");
                 ModelState.AddModelError(string.Empty, "An error occurred while creating the product");
-                ViewBag.Categories = await _apiService.GetCategoriesAsync() ?? new List<string>();
+                ViewBag.Categories = await ApiService.GetCategoriesAsync() ?? new List<string>();
                 return View(productDto);
             }
         }
@@ -118,7 +118,7 @@ namespace YourMvcProject.Controllers
         {
             try
             {
-                var product = await _apiService.GetProductByIdAsync(id);
+                var product = await ApiService.GetProductByIdAsync(id);
 
                 if (product == null)
                 {
@@ -136,13 +136,13 @@ namespace YourMvcProject.Controllers
                     IsActive = product.IsActive
                 };
 
-                ViewBag.Categories = await _apiService.GetCategoriesAsync() ?? new List<string>();
+                ViewBag.Categories = await ApiService.GetCategoriesAsync() ?? new List<string>();
                 ViewBag.ProductId = id;
                 return View(updateDto);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error loading product for edit, ID {ProductId}", id);
+                Logger.LogError(ex, "Error loading product for edit, ID {ProductId}", id);
                 TempData["ErrorMessage"] = "An error occurred while loading the product";
                 return RedirectToAction(nameof(Index));
             }
@@ -157,12 +157,12 @@ namespace YourMvcProject.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    ViewBag.Categories = await _apiService.GetCategoriesAsync() ?? new List<string>();
+                    ViewBag.Categories = await ApiService.GetCategoriesAsync() ?? new List<string>();
                     ViewBag.ProductId = id;
                     return View(productDto);
                 }
 
-                var success = await _apiService.UpdateProductAsync(id, productDto);
+                var success = await ApiService.UpdateProductAsync(id, productDto);
 
                 if (success)
                 {
@@ -171,15 +171,15 @@ namespace YourMvcProject.Controllers
                 }
 
                 ModelState.AddModelError(string.Empty, "Failed to update product");
-                ViewBag.Categories = await _apiService.GetCategoriesAsync() ?? new List<string>();
+                ViewBag.Categories = await ApiService.GetCategoriesAsync() ?? new List<string>();
                 ViewBag.ProductId = id;
                 return View(productDto);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error updating product ID {ProductId}", id);
+                Logger.LogError(ex, "Error updating product ID {ProductId}", id);
                 ModelState.AddModelError(string.Empty, "An error occurred while updating the product");
-                ViewBag.Categories = await _apiService.GetCategoriesAsync() ?? new List<string>();
+                ViewBag.Categories = await ApiService.GetCategoriesAsync() ?? new List<string>();
                 ViewBag.ProductId = id;
                 return View(productDto);
             }
@@ -190,7 +190,7 @@ namespace YourMvcProject.Controllers
         {
             try
             {
-                var product = await _apiService.GetProductByIdAsync(id);
+                var product = await ApiService.GetProductByIdAsync(id);
 
                 if (product == null)
                 {
@@ -202,7 +202,7 @@ namespace YourMvcProject.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error loading product for deletion, ID {ProductId}", id);
+                Logger.LogError(ex, "Error loading product for deletion, ID {ProductId}", id);
                 TempData["ErrorMessage"] = "An error occurred while loading the product";
                 return RedirectToAction(nameof(Index));
             }
@@ -215,7 +215,7 @@ namespace YourMvcProject.Controllers
         {
             try
             {
-                var success = await _apiService.DeleteProductAsync(id);
+                var success = await ApiService.DeleteProductAsync(id);
 
                 if (success)
                 {
@@ -230,7 +230,7 @@ namespace YourMvcProject.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error deleting product ID {ProductId}", id);
+                Logger.LogError(ex, "Error deleting product ID {ProductId}", id);
                 TempData["ErrorMessage"] = "An error occurred while deleting the product";
                 return RedirectToAction(nameof(Index));
             }
